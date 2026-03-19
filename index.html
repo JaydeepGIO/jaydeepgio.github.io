@@ -881,28 +881,78 @@
     .nav-links { display: none; }
     .hamburger { display: block; }
     .container { padding: 0 20px; }
-    section { padding: 72px 0; }
-    .hero-stats { flex-direction: column; width: 100%; border-radius: 10px; }
-    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
-    .stat-item:last-child { border-bottom: none; }
-    .about-grid { grid-template-columns: 1fr; }
+    section { padding: 64px 0; }
+
+    /* Hero */
+    #hero { padding: 120px 0 64px; }
+    .hero-cta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .hero-cta .btn-primary {
+      grid-column: 1 / -1;
+      justify-content: center;
+    }
+    .hero-cta .btn-ghost { justify-content: center; }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      border-radius: 10px;
+    }
+    .stat-item {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-item:nth-child(2) { border-right: none; }
+    .stat-item:nth-child(3) { border-bottom: none; }
+    .stat-item:nth-child(4) { border-right: none; border-bottom: none; }
+    .stat-number { font-size: 26px; }
+
+    /* About */
+    .about-grid { grid-template-columns: 1fr; gap: 28px; }
+
+    /* Skills */
     .skills-grid { grid-template-columns: 1fr; }
+
+    /* Impact */
     .impact-grid { grid-template-columns: 1fr 1fr; }
+    .impact-num { font-size: 32px; }
+    .impact-item { padding: 24px 16px; }
+
+    /* Projects */
     .projects-grid { grid-template-columns: 1fr; }
     .project-card-placeholder { grid-column: auto; }
-    .contact-inner { grid-template-columns: 1fr; }
+
+    /* Coding section grids */
+    #coding .container > div[style*="grid-template-columns:1fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Education */
     .edu-card { flex-direction: column; align-items: flex-start; }
     .edu-right { text-align: left; }
+
+    /* Experience */
     .exp-minor { flex-direction: column; }
     .exp-company-header { flex-direction: column; gap: 8px; }
+    .project-block { padding: 20px; }
+    .project-block-header { flex-direction: column; gap: 6px; }
+
+    /* Contact */
+    .contact-inner { grid-template-columns: 1fr; gap: 28px; }
+    .contact-headline { font-size: 26px; }
   }
 
   @media (max-width: 480px) {
     .hero-name { letter-spacing: -1px; }
+    .hero-tagline { font-size: 15px; }
     .impact-grid { grid-template-columns: 1fr 1fr; }
-    .impact-num { font-size: 34px; }
-    .hero-cta { flex-direction: column; }
-    .btn-primary, .btn-ghost { justify-content: center; }
+    .impact-num { font-size: 28px; }
+    .stat-number { font-size: 22px; }
+    .section-tag { font-size: 10px; }
+    .project-block ul li { font-size: 13px; }
   }
 </style>
 </head>
@@ -943,7 +993,7 @@
     <p class="hero-role">Backend Software Engineer</p>
     <p class="hero-tagline">
       I build <strong>distributed systems that don't fall over.</strong><br>
-      3.5 years keeping 20000+ network devices online and assembly lines running — now looking for bigger problems to solve.
+      3.5 years keeping 20,000+ network devices online and assembly lines running — now looking for bigger problems to solve.
     </p>
     <div class="hero-cta">
       <a href="mailto:jaydeepg.el@gmail.com" class="btn-primary">
@@ -969,7 +1019,7 @@
         <div class="stat-label">Latency reduced</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">20000+</div>
+        <div class="stat-number">20K+</div>
         <div class="stat-label">Devices managed</div>
       </div>
       <div class="stat-item">
@@ -987,7 +1037,7 @@
     <div class="about-grid">
       <div class="about-text">
         <p>I'm a backend software engineer with <strong>3.5 years of experience</strong> building production-grade distributed systems at VVDN Technologies. I specialize in Python, Django, and FastAPI — designing APIs, async event pipelines, and caching layers that handle real workload at scale.</p>
-        <p>I've worked on a <strong>cloud-scale network management platform</strong> serving 20000+ active devices and a <strong>real-time manufacturing execution system</strong> for PCB assembly lines — both live, both critical, both mine to keep running.</p>
+        <p>I've worked on a <strong>cloud-scale network management platform</strong> serving 20,000+ active devices and a <strong>real-time manufacturing execution system</strong> for PCB assembly lines — both live, both critical, both mine to keep running.</p>
         <p>Now I'm looking for a senior role at a product company where I can <strong>own systems end to end</strong>, grow into a tech lead, and work on problems that actually matter.</p>
       </div>
       <div class="about-side">
@@ -1093,7 +1143,7 @@
         <div class="impact-desc">Fewer redundant<br>DB calls via Redis</div>
       </div>
       <div class="impact-item">
-        <div class="impact-num">20000+</div>
+        <div class="impact-num">20K+</div>
         <div class="impact-desc">Network devices<br>managed live</div>
       </div>
     </div>
@@ -1132,7 +1182,7 @@
           <span class="tag-accent">Docker</span>
         </div>
         <ul>
-          <li>Architected backend services for a <strong>cloud-scale EMS platform managing 20000+ network devices</strong> — high-throughput telemetry ingestion using Django REST and Cassandra</li>
+          <li>Architected backend services for a <strong>cloud-scale EMS platform managing 20,000+ network devices</strong> — high-throughput telemetry ingestion using Django REST and Cassandra</li>
           <li>Built async event pipelines with <strong>RabbitMQ and Celery</strong> for decoupled, fault-tolerant processing of device configuration and alert events at scale</li>
           <li>Designed a Redis caching layer and optimized Cassandra bulk-write pipelines — <strong>cut DB calls by 30%, reduced server load by 45%</strong> under peak traffic</li>
           <li>Improved batch processing by <strong>20%</strong> using Pandas pipelines and Python threading for parallel device polling</li>
