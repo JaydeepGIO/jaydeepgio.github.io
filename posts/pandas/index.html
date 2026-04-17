@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Production-Ready Data Engineering with Pandas — Jaydeep Goswami</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- React & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body { margin: 0; padding: 0; background: #030712; }
+    /* Navigation shim for standalone post */
+    .post-nav {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 0 40px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #222;
+    }
+    .post-nav a {
+      color: #999490;
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.2s;
+    }
+    .post-nav a:hover { color: #c8f563; }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .post-nav { padding: 0 20px; }
+      .mobile-padding { padding-left: 16px !important; padding-right: 16px !important; }
+      .day-selector { display: flex !important; flex-direction: column; width: 100%; border-radius: 8px !important; }
+      .day-selector button { width: 100%; border-radius: 0 !important; border-bottom: 1px solid #1e293b; }
+      .day-selector button:last-child { border-bottom: none; }
+      h1 { font-size: 28px !important; }
+      .header-tags { gap: 4px !important; }
+      .header-tags span { padding: 2px 8px !important; font-size: 9px !important; }
+    }
+
+    pre { overflow-x: auto; white-space: pre; max-width: 100%; }
+  </style>
+</head>
+<body>
+  <nav class="post-nav">
+    <a href="../index.html"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+  </nav>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const curriculum = [
+      {
+        id: "numpy-core",
+        tag: "NUMPY",
+        color: "#00C2FF",
+        accent: "#003A4D",
+        time: "09:00 – 11:00",
+        title: "NumPy Core — Arrays, Indexing & Vectorization",
+        why: "NumPy arrays are the memory backbone of all scientific Python. Before Pandas, ML libraries, or data pipelines — everything sits on ndarray. Learning it means understanding how Python avoids Python-speed loops.",
+        sections: [
+          {
+            title: "1. Array Creation",
+            theory: "np.array() wraps Python lists into a contiguous C-array in memory. Unlike lists, every element is the same dtype, enabling SIMD vectorization.",
+            code: `import numpy as np
+
+# From list
+a = np.array([1, 2, 3, 4, 5])
+print(a.dtype, a.shape)   # int64, (5,)
+
+# 2D Matrix
+m = np.array([[1,2,3],[4,5,6]])
+print(m.shape)            # (2, 3)
+
+# Factory functions — critical for production
+zeros  = np.zeros((3, 4))          # filled with 0.0
+ones   = np.ones((2, 2), dtype=int)
+eye    = np.eye(3)                 # identity matrix
+rng    = np.arange(0, 20, 2)      # [0,2,4,...,18]
+linsp  = np.linspace(0, 1, 5)     # 5 evenly spaced pts
+rand   = np.random.rand(3, 3)     # uniform [0,1)
+randn  = np.random.randn(1000)    # standard normal`,
+            exercise: `# EXERCISE 1 — Build these without looking above:
+# a) Create a 5x5 identity matrix
+# b) Create 100 values from 0 to 2π (hint: np.pi)
+# c) Create a 3x3 matrix of random integers between 10–99
+#    (hint: np.random.randint)
+# d) What is the shape, ndim, size of each array?
+
+import numpy as np
+# --- a ---
+
+# --- b ---
+
+# --- c ---
+
+# --- d ---`,
+            solution: `import numpy as np
+# a
+eye = np.eye(5)
+# b
+angles = np.linspace(0, 2*np.pi, 100)
+# c
+mat = np.random.randint(10, 100, size=(3,3))
+# d
+for arr in [eye, angles, mat]:
+    print(arr.shape, arr.ndim, arr.size)`
+          },
+          {
+            title: "2. Indexing, Slicing & Boolean Masks",
+            theory: "NumPy slices return VIEWS, not copies — mutation propagates back. Boolean indexing is the engine behind Pandas .loc filtering. These patterns appear in every data pipeline.",
+            code: `a = np.array([10, 20, 30, 40, 50])
+
+# Standard slicing
+print(a[1:4])      # [20 30 40]
+print(a[-1])       # 50
+print(a[::2])      # [10 30 50]  step=2
+
+# 2D indexing
+m = np.arange(1, 10).reshape(3, 3)
+print(m[1, 2])       # 6  — row 1, col 2
+print(m[:, 1])       # [2 5 8]  — all rows, col 1
+print(m[0:2, 1:3])   # top-right 2x2 block
+
+# Boolean masking — THE most important pattern
+data = np.array([15, 3, 87, 42, 9, 63])
+mask = data > 20
+print(data[mask])    # [87 42 63]
+
+# One-liner version (production style)
+result = data[data > 20]
+
+# Fancy indexing (copies, not views!)
+idx = [0, 2, 5]
+print(data[idx])     # [15 87 63]`,
+            exercise: `# EXERCISE 2
+m = np.arange(1, 26).reshape(5, 5)
+
+# a) Extract the 3x3 center block (values 7,8,9,12,13,14,17,18,19)
+# b) Get all values > 15 using boolean mask
+# c) Replace all even numbers with 0 (in-place)
+# d) Get diagonal values without np.diag()`,
+            solution: `m = np.arange(1, 26).reshape(5, 5)
+# a
+center = m[1:4, 1:4]
+# b
+big = m[m > 15]
+# c
+m[m % 2 == 0] = 0
+# d
+diag = m[np.arange(5), np.arange(5)]`
+          },
+          {
+            title: "3. Vectorized Operations & Broadcasting",
+            theory: "Broadcasting is NumPy's rule for operating on arrays of different shapes without loops. Mastering it eliminates 80% of Python-speed bottlenecks in data engineering.",
+            code: `a = np.array([1, 2, 3, 4])
+b = np.array([10, 20, 30, 40])
+
+# Element-wise — no loops needed
+print(a + b)       # [11 22 33 44]
+print(a * b)       # [10 40 90 160]
+print(a ** 2)      # [1  4  9  16]
+print(np.sqrt(a))
+
+# Universal functions (ufuncs) — vectorized C-speed
+print(np.exp(a))
+print(np.log(b))
+print(np.sin(np.linspace(0, np.pi, 5)))
+
+# Broadcasting rules (shape alignment right to left)
+col = np.array([[1], [2], [3]])   # shape (3,1)
+row = np.array([10, 20, 30])      # shape (3,)
+print(col + row)
+# [[11 21 31]
+#  [12 22 32]
+#  [13 23 33]]
+
+# Aggregations — axis matters!
+m = np.array([[1,2,3],[4,5,6]])
+print(np.sum(m, axis=0))   # [5 7 9]  per column
+print(np.sum(m, axis=1))   # [6 15]   per row`,
+            exercise: `# EXERCISE 3 — Production scenario
+# Normalize 1000 sensor readings to [0, 1]:
+#   normalized = (x - min) / (max - min)
+
+np.random.seed(42)
+sensors = np.random.randint(200, 800, size=1000).astype(float)
+
+# a) Normalize using vectorized ops (no loops)
+# b) Verify: min=0.0, max=1.0
+# c) Count readings above 0.7 after normalization
+# d) Compute mean and std of original data`,
+            solution: `sensors = np.random.randint(200, 800, size=1000).astype(float)
+# a
+normalized = (sensors - sensors.min()) / (sensors.max() - sensors.min())
+# b
+print(normalized.min(), normalized.max())  # 0.0 1.0
+# c
+count = np.sum(normalized > 0.7)
+# d
+print(sensors.mean(), sensors.std())`
+          }
+        ]
+      },
+      {
+        id: "pandas-series",
+        tag: "PANDAS",
+        color: "#7C3AED",
+        accent: "#1E0A3C",
+        time: "11:15 – 13:00",
+        title: "Pandas Fundamentals — Series, DataFrame & I/O",
+        why: "Pandas is the SQL of Python data work. Series = labeled 1D array. DataFrame = labeled 2D table. The label index is what makes Pandas powerful — alignment-by-label prevents entire classes of data bugs.",
+        sections: [
+          {
+            title: "4. Series & DataFrame Creation",
+            theory: "A DataFrame is a dict of Series sharing a common Index. The Index is not just row numbers — it's a lookup key enabling O(1) access and automatic alignment during joins.",
+            code: `import pandas as pd
+import numpy as np
+
+# --- Series ---
+s = pd.Series([10, 20, 30], index=['a','b','c'])
+print(s['b'])        # 20
+
+# --- DataFrame from dict (most common) ---
+df = pd.DataFrame({
+    'name':   ['Alice', 'Bob', 'Carol', 'Dave'],
+    'age':    [25, 32, 28, 35],
+    'salary': [70000, 90000, 85000, 110000],
+    'dept':   ['Eng', 'Sales', 'Eng', 'Eng']
+})
+
+# --- Reading real data (production) ---
+# df = pd.read_csv('data.csv')
+# df = pd.read_parquet('data.parquet')   # columnar, faster
+# df = pd.read_json('api_response.json')
+# df = pd.read_sql(query, conn)
+
+# --- First-look functions every engineer uses ---
+print(df.shape)         # (4, 4)
+print(df.dtypes)
+print(df.info())        # non-null counts + memory
+print(df.describe())    # count/mean/std/min/max
+print(df.head(2))`,
+            exercise: `# EXERCISE 4 — Build this DataFrame:
+# | name  | score | grade | passed |
+# | Ana   | 88    | A     | True   |
+# | Ben   | 55    | D     | False  |
+# | Cara  | 72    | B     | True   |
+# | Dan   | 91    | A     | True   |
+# | Eve   | 48    | F     | False  |
+
+# a) Create the DataFrame
+# b) Print shape, dtypes, describe()
+# c) Count students who passed
+# d) Average score of those who passed`,
+            solution: `df = pd.DataFrame({
+    'name':   ['Ana','Ben','Cara','Dan','Eve'],
+    'score':  [88, 55, 72, 91, 48],
+    'grade':  ['A','D','B','A','F'],
+    'passed': [True, False, True, True, False]
+})
+print(df.shape, df.dtypes)
+print(df['passed'].sum())                    # 3
+print(df[df['passed']]['score'].mean())`
+          },
+          {
+            title: "5. Selection — loc, iloc, Boolean Filtering",
+            theory: ".loc uses LABELS. .iloc uses INTEGER positions. This distinction prevents subtle bugs when your index isn't 0,1,2,... (after merges or sorted data). In production, always prefer .loc for explicitness.",
+            code: `df = pd.DataFrame({
+    'name':   ['Alice','Bob','Carol','Dave','Eve'],
+    'age':    [25, 32, 28, 35, 29],
+    'salary': [70000, 90000, 85000, 110000, 75000],
+    'dept':   ['Eng','Sales','Eng','Eng','HR']
+}, index=[10, 20, 30, 40, 50])   # non-default index!
+
+# .loc — label based
+print(df.loc[10])              # row with index=10
+print(df.loc[10, 'salary'])    # single value — 70000
+print(df.loc[10:30])           # inclusive on BOTH ends!
+print(df.loc[[10,40], ['name','dept']])
+
+# .iloc — position based
+print(df.iloc[0])              # first row (regardless of index)
+print(df.iloc[0, 2])           # row 0, col 2
+print(df.iloc[1:3])            # rows 1,2 (exclusive end)
+
+# Boolean filtering
+eng       = df[df['dept'] == 'Eng']
+senior    = df[df['age'] > 28]
+rich_eng  = df[(df['dept'] == 'Eng') & (df['salary'] > 80000)]
+
+# .isin() for multiple values
+tech = df[df['dept'].isin(['Eng', 'HR'])]`,
+            exercise: `# EXERCISE 5
+df = pd.DataFrame({
+    'product': ['Laptop','Phone','Tablet','Watch','Headset','Monitor'],
+    'price':   [1200, 800, 500, 300, 150, 700],
+    'stock':   [50, 200, 80, 500, 120, 30],
+    'category':['Electronics']*4 + ['Audio','Electronics']
+}, index=[101,102,103,104,105,106])
+
+# a) Select rows with index 102, 104 using .loc
+# b) Select first 3 rows using .iloc
+# c) Filter: price > 400 AND stock < 100
+# d) Get products where category='Audio' or price < 200
+# e) Select only 'product' and 'price' for all rows`,
+            solution: `# a
+print(df.loc[[102,104]])
+# b
+print(df.iloc[:3])
+# c
+print(df[(df['price'] > 400) & (df['stock'] < 100)])
+# d
+print(df[df['category'].isin(['Audio']) | (df['price'] < 200)])
+# e
+print(df.loc[:, ['product','price']])`
+          }
+        ]
+      },
+      {
+        id: "pandas-transform",
+        tag: "PANDAS",
+        color: "#059669",
+        accent: "#022C22",
+        time: "14:00 – 16:00",
+        title: "Data Transformation — Clean, Reshape, Aggregate",
+        why: "70% of data engineering is cleaning and reshaping. These operations turn raw messy data into query-ready tables. Every ETL pipeline, feature engineering step, and report aggregation uses these exact patterns.",
+        sections: [
+          {
+            title: "6. Handling Missing Data",
+            theory: "NaN propagates silently through calculations. Detecting and handling nulls before aggregation is the first defensive step in any pipeline.",
+            code: `import pandas as pd, numpy as np
+
+df = pd.DataFrame({
+    'name':   ['Alice', 'Bob', None, 'Dave'],
+    'age':    [25, np.nan, 28, 35],
+    'salary': [70000, 90000, np.nan, np.nan],
+    'dept':   ['Eng', 'Sales', 'Eng', None]
+})
+
+# Detecting nulls
+print(df.isnull().sum())        # count per column
+print(df.isnull().sum().sum())  # total null count
+
+# Dropping
+df.dropna()                     # drop rows with ANY null
+df.dropna(subset=['salary'])    # only if salary is null
+df.dropna(thresh=3)             # keep rows with >= 3 non-null
+
+# Filling
+df.fillna(0)
+df['age'].fillna(df['age'].mean())
+df['dept'].fillna('Unknown')
+df['salary'].fillna(method='ffill')   # forward fill
+df.fillna({'age': df['age'].median(), 'dept': 'Unknown'})`,
+            exercise: `# EXERCISE 6 — Real-world null handling
+np.random.seed(42)
+df = pd.DataFrame({
+    'user_id':    range(1, 11),
+    'age':        [23, np.nan, 31, 45, np.nan, 28, 52, np.nan, 34, 29],
+    'income':     [45000, 68000, np.nan, 92000, 55000, np.nan, 120000, 43000, np.nan, 67000],
+    'country':    ['US','UK',None,'US','CA',None,'UK','US','CA','US'],
+    'churn':      [0, 1, 0, 0, np.nan, 1, 0, np.nan, 1, 0]
+})
+
+# a) Print null count per column
+# b) Drop rows where 'churn' is null
+# c) Fill 'age' with median, 'income' with mean
+# d) Fill 'country' with 'Unknown'
+# e) Verify no nulls remain`,
+            solution: `print(df.isnull().sum())
+df = df.dropna(subset=['churn'])
+df['age'] = df['age'].fillna(df['age'].median())
+df['income'] = df['income'].fillna(df['income'].mean())
+df['country'] = df['country'].fillna('Unknown')
+print(df.isnull().sum())`
+          },
+          {
+            title: "7. Apply, Map & Vectorized String Ops",
+            theory: ".apply() runs a Python function per row/column — slower but essential for complex logic. .str accessor vectorizes string methods — critical for text cleaning in ETL.",
+            code: `import pandas as pd
+
+df = pd.DataFrame({
+    'name':   ['  alice smith ', 'BOB JONES', 'carol WHITE'],
+    'salary': [70000, 90000, 85000],
+    'email':  ['alice@gmail.com', 'bob@company.org', 'carol@gmail.com']
+})
+
+# .apply() — custom logic per element
+df['salary_band'] = df['salary'].apply(
+    lambda x: 'Senior' if x > 85000 else 'Junior'
+)
+
+# Row-wise apply (axis=1) — expensive, avoid if vectorizable
+df['summary'] = df.apply(
+    lambda row: f"{row['name'].strip()} earns {row['salary']}",
+    axis=1
+)
+
+# String accessor (.str) — vectorized string ops
+df['name'] = df['name'].str.strip().str.title()
+df['domain'] = df['email'].str.split('@').str[1]
+df['is_gmail'] = df['email'].str.endswith('@gmail.com')
+
+# String extract with regex
+df['username'] = df['email'].str.extract(r'([^@]+)@')`,
+            exercise: `# EXERCISE 7
+df = pd.DataFrame({
+    'raw_name':   ['  john DOE ', 'JANE smith', 'Bob   MARTIN '],
+    'raw_phone':  ['(555) 123-4567', '555.987.6543', '555-246-8101'],
+    'revenue':    [125000, 89000, 210000],
+    'join_date':  ['2020-03-15', '2019-11-02', '2021-07-28']
+})
+
+# a) Clean raw_name: strip + Title Case
+# b) Clean raw_phone: keep digits only (str.replace regex)
+# c) 'tier': 'Gold' if revenue > 150000 else 'Silver'
+# d) Extract year from join_date as int
+# e) tenure_years = 2024 - join_year`,
+            solution: `df['name'] = df['raw_name'].str.strip().str.title()
+df['phone'] = df['raw_phone'].str.replace(r'\\D', '', regex=True)
+df['tier'] = df['revenue'].apply(lambda x: 'Gold' if x > 150000 else 'Silver')
+df['join_year'] = df['join_date'].str[:4].astype(int)
+df['tenure_years'] = 2024 - df['join_year']`
+          },
+          {
+            title: "8. GroupBy & Aggregation",
+            theory: "GroupBy implements Split-Apply-Combine: split data by category, apply a function, recombine. This is SQL GROUP BY in Python — the core of any reporting or feature-engineering pipeline.",
+            code: `import pandas as pd, numpy as np
+np.random.seed(42)
+
+df = pd.DataFrame({
+    'dept':   ['Eng','Eng','Sales','Sales','Eng','HR','HR','Sales'],
+    'level':  ['Senior','Junior','Senior','Junior','Senior','Senior','Junior','Senior'],
+    'salary': [120000,80000,95000,65000,115000,90000,60000,88000],
+    'yoe':    [8, 2, 6, 1, 7, 5, 1, 4]
+})
+
+# Multiple aggregations — .agg()
+stats = df.groupby('dept')['salary'].agg(['mean','median','std','count'])
+
+# Named agg — production style
+result = df.groupby('dept').agg(
+    avg_salary=('salary', 'mean'),
+    total_salary=('salary', 'sum'),
+    avg_yoe=('yoe', 'mean'),
+    headcount=('salary', 'count')
+).reset_index()
+
+# Transform — keeps original shape (for feature engineering!)
+df['dept_avg_salary'] = df.groupby('dept')['salary'].transform('mean')
+df['salary_delta'] = df['salary'] - df['dept_avg_salary']
+
+# Filter entire groups
+high_pay = df.groupby('dept').filter(lambda g: g['salary'].mean() > 90000)`,
+            exercise: `# EXERCISE 8 — E-commerce analytics
+np.random.seed(0)
+df = pd.DataFrame({
+    'order_id': range(1, 21),
+    'customer': (['C001','C002','C001','C003','C002',
+                  'C001','C003','C004','C002','C001'] * 2),
+    'category': (['Electronics','Clothing','Electronics','Books','Clothing'] * 4),
+    'amount':   np.random.randint(50, 500, 20),
+    'qty':      np.random.randint(1, 5, 20)
+})
+
+# a) Total revenue per category
+# b) Per customer: total spend, order count, avg order value
+# c) Which category has highest avg order value?
+# d) Add 'customer_lifetime_value' WITHOUT losing rows (transform)
+# e) Find customers whose total spend > 1000`,
+            solution: `# a
+print(df.groupby('category')['amount'].sum())
+# b
+summary = df.groupby('customer').agg(
+    total=('amount','sum'), orders=('order_id','count'),
+    avg=('amount','mean')).reset_index()
+# c
+print(df.groupby('category')['amount'].mean().idxmax())
+# d
+df['clv'] = df.groupby('customer')['amount'].transform('sum')
+# e
+clv = df.groupby('customer')['amount'].sum()
+print(clv[clv > 1000])`
+          }
+        ]
+      },
+      {
+        id: "pandas-advanced",
+        tag: "ADVANCED",
+        color: "#F59E0B",
+        accent: "#2C1A00",
+        time: "16:15 – 18:00",
+        title: "Merges, Pivot Tables & Real Pipeline",
+        why: "Production data always lives in multiple tables. Merges are JOIN operations. Pivot tables turn transactional data into analytical summaries. The capstone ties everything into a realistic ETL + analysis workflow.",
+        sections: [
+          {
+            title: "9. Merging & Joining DataFrames",
+            theory: "pd.merge() implements SQL JOINs. Understanding key alignment prevents data duplication and row-loss bugs — the #1 source of silent errors in production pipelines.",
+            code: `import pandas as pd
+
+customers = pd.DataFrame({
+    'customer_id': [1, 2, 3, 4],
+    'name': ['Alice','Bob','Carol','Dave'],
+    'city': ['NY','LA','NY','Chicago']
+})
+orders = pd.DataFrame({
+    'order_id':   [101,102,103,104,105],
+    'customer_id':[1,  2,  1,  3,  5],   # 5 has no customer!
+    'amount':     [200,350,180,420,90]
+})
+
+# INNER JOIN — only matching rows
+inner = pd.merge(customers, orders, on='customer_id', how='inner')
+
+# LEFT JOIN — all customers, even without orders
+left = pd.merge(customers, orders, on='customer_id', how='left')
+
+# OUTER JOIN — everything (nulls where no match)
+outer = pd.merge(customers, orders, on='customer_id', how='outer')
+
+# Production debug: detect merge issues
+merged = pd.merge(customers, orders, on='customer_id',
+                  how='outer', indicator=True)
+print(merged['_merge'].value_counts())
+# both          3
+# right_only    1  <- order 105 has unknown customer
+# left_only     1  <- customer 4 has no orders`,
+            exercise: `# EXERCISE 9
+products = pd.DataFrame({
+    'product_id': [1,2,3,4],
+    'name': ['Laptop','Phone','Tablet','Watch'],
+    'cost': [800, 400, 300, 150]
+})
+sales = pd.DataFrame({
+    'sale_id': range(1,8),
+    'product_id': [1,2,1,3,2,4,5],  # product 5 doesn't exist!
+    'units': [2,5,1,3,4,6,2],
+    'region': ['East','West','East','North','West','East','South']
+})
+
+# a) Inner join: which sales have valid products?
+# b) Left join from sales: keep all, show product name if available
+# c) After inner join, add revenue = cost * units
+# d) Which region generated highest total revenue?`,
+            solution: `# a
+valid = pd.merge(sales, products, on='product_id', how='inner')
+# b
+all_sales = pd.merge(sales, products, on='product_id', how='left')
+# c
+valid['revenue'] = valid['cost'] * valid['units']
+# d
+print(valid.groupby('region')['revenue'].sum().idxmax())`
+          },
+          {
+            title: "10. Pivot Tables & Reshape",
+            theory: "pivot_table() is the analytical workhorse. melt() is its inverse — converting wide format to long format, which ML models and plotting libraries require.",
+            code: `import pandas as pd, numpy as np
+
+df = pd.DataFrame({
+    'salesperson': ['Alice','Alice','Bob','Bob','Carol','Carol']*2,
+    'quarter': ['Q1','Q2']*6,
+    'product':  ['Hardware']*6 + ['Software']*6,
+    'revenue': np.random.randint(50000, 200000, 12)
+})
+
+# pivot_table — SQL GROUP BY + reshape
+pivot = pd.pivot_table(
+    df, values='revenue', index='salesperson',
+    columns='quarter', aggfunc='sum',
+    fill_value=0, margins=True  # adds totals row/col
+)
+
+# melt() — wide to long (for ML/plotting)
+wide = pd.DataFrame({
+    'student': ['Ana','Bob'],
+    'math':    [85, 72],
+    'science': [90, 68],
+    'english': [78, 85]
+})
+long = pd.melt(wide, id_vars=['student'],
+               value_vars=['math','science','english'],
+               var_name='subject', value_name='score')
+# student  subject  score
+# Ana      math     85
+# Ana      science  90  ...`,
+            exercise: `# EXERCISE 10 — Sales dashboard pivot
+np.random.seed(7)
+regions = ['North','South','East','West']
+products = ['ProductA','ProductB','ProductC']
+months = ['Jan','Feb','Mar','Apr']
+
+data = [{'region':r,'product':p,'month':m,
+         'sales': np.random.randint(1000,10000)}
+        for r in regions for p in products for m in months]
+df = pd.DataFrame(data)
+
+# a) Pivot: rows=region, cols=product, values=total sales
+# b) Which product is best in each region?
+# c) Melt the pivot back to long format
+# d) Pivot: rows=month, cols=region, values=avg sales`,
+            solution: `# a
+pivot = pd.pivot_table(df, values='sales',
+    index='region', columns='product', aggfunc='sum', fill_value=0)
+# b
+print(pivot.idxmax(axis=1))
+# c
+long = pivot.reset_index().melt(id_vars='region',
+    var_name='product', value_name='total_sales')
+# d
+monthly = pd.pivot_table(df, values='sales',
+    index='month', columns='region', aggfunc='mean').round(0)`
+          },
+          {
+            title: "🏆 CAPSTONE — End-to-End Data Pipeline",
+            theory: "Integrates everything: load → null handling → transforms → merge → aggregate → report. This is a realistic production data engineering task.",
+            code: `# Employee Analytics Pipeline
+import pandas as pd, numpy as np
+np.random.seed(42)
+
+employees = pd.DataFrame({
+    'emp_id':   range(1, 21),
+    'name':     [f'Employee_{i}' for i in range(1,21)],
+    'dept_id':  np.random.choice([10,20,30,40], 20),
+    'age':      np.random.randint(22, 58, 20).astype(float),
+    'salary':   np.random.randint(50000, 150000, 20).astype(float),
+    'rating':   np.random.choice([1,2,3,4,5,np.nan], 20)
+})
+employees.loc[[2,7,14], 'age'] = np.nan
+employees.loc[[5,11,18], 'salary'] = np.nan
+
+departments = pd.DataFrame({
+    'dept_id':   [10, 20, 30, 40],
+    'dept_name': ['Engineering','Marketing','Sales','HR'],
+    'budget':    [500000, 200000, 300000, 150000]
+})`,
+            exercise: `# Complete the pipeline:
+# Step 1: Audit nulls
+# Step 2: Fill age with median, salary with dept median
+# Step 3: Merge employees + departments on dept_id
+# Step 4: Compute salary_pct_of_budget per dept
+# Step 5: GroupBy dept_name: avg salary, headcount, avg rating
+# Step 6: Add is_top_performer (rating >= 4)
+# Step 7: Pivot dept_name vs is_top_performer
+# Step 8: Print final summary report`,
+            solution: `# Step 1
+print(employees.isnull().sum())
+
+# Step 2
+employees['age'].fillna(employees['age'].median(), inplace=True)
+employees['salary'] = employees.groupby('dept_id')['salary'].transform(
+    lambda x: x.fillna(x.median()))
+
+# Step 3
+merged = pd.merge(employees, departments, on='dept_id', how='inner')
+
+# Step 4
+sal_dept = merged.groupby('dept_name')['salary'].sum().reset_index()
+sal_dept = pd.merge(sal_dept, departments[['dept_name','budget']], on='dept_name')
+sal_dept['util_pct'] = (sal_dept['salary']/sal_dept['budget']*100).round(1)
+
+# Step 5
+summary = merged.groupby('dept_name').agg(
+    avg_salary=('salary','mean'), headcount=('emp_id','count'),
+    avg_rating=('rating','mean')).round(2).reset_index()
+
+# Step 6
+merged['is_top_performer'] = merged['rating'] >= 4
+
+# Step 7
+pivot = pd.crosstab(merged['dept_name'], merged['is_top_performer'])
+
+print(summary.to_string(index=False))
+print(pivot)
+print(sal_dept[['dept_name','util_pct']].to_string(index=False))`
+          }
+        ]
+      },
+
+      // ─────────────────────────────────────────────────────────────────────────────
+      // NEW MODULE 5 — TIME SERIES
+      // ─────────────────────────────────────────────────────────────────────────────
+      {
+        id: "time-series",
+        tag: "TIME SERIES",
+        color: "#EC4899",
+        accent: "#2D0A1E",
+        time: "Day 2 · Morning",
+        title: "Time Series Analysis — Resample, Roll & Timezones",
+        why: "Real-world data is chronological: stock prices, sensor telemetry, server logs, e-commerce sales. The DatetimeIndex unlocks a whole axis of analysis — frequency conversion, moving windows, lag features — that is impossible with plain integer indices. This is the backbone of forecasting and anomaly detection pipelines.",
+        sections: [
+          {
+            title: "11. DatetimeIndex & Parsing",
+            theory: "pd.to_datetime() converts strings/epochs to a DatetimeIndex. Once your index is a DatetimeIndex, Pandas unlocks .resample(), .rolling(), period accessors (.dt.hour, .dt.month) and label slicing by date string — features unavailable on plain integer indices.",
+            code: `import pandas as pd
+import numpy as np
+
+# --- Parsing dates ---
+s = pd.to_datetime('2024-03-15')       # single
+dates = pd.to_datetime(['2024-01-01', '2024-06-15', '2024-12-31'])
+dates_from_epoch = pd.to_datetime([1700000000], unit='s')  # Unix epoch
+
+# --- Building a date range ---
+idx = pd.date_range(start='2024-01-01', periods=365, freq='D')  # daily
+biz = pd.date_range(start='2024-01-01', periods=52,  freq='W')  # weekly
+
+# --- Typical time series DataFrame ---
+np.random.seed(42)
+ts = pd.DataFrame({
+    'revenue': np.random.randint(1000, 5000, 365) +
+               np.sin(np.linspace(0, 4*np.pi, 365)) * 500,  # seasonal
+    'cost':    np.random.randint(600, 2000, 365)
+}, index=idx)
+
+# --- .dt accessor on a column (not index) ---
+df = pd.DataFrame({'date': pd.date_range('2024-01-01', periods=6, freq='ME')})
+df['year']    = df['date'].dt.year
+df['month']   = df['date'].dt.month
+df['quarter'] = df['date'].dt.quarter
+df['weekday'] = df['date'].dt.day_name()
+
+# --- Label slicing with DatetimeIndex ---
+print(ts['2024-03'])           # all of March
+print(ts['2024-Q1'])           # entire Q1
+print(ts['2024-01':'2024-03']) # Jan–Mar inclusive`,
+            exercise: `# EXERCISE 11
+import pandas as pd, numpy as np
+np.random.seed(7)
+
+# Build a 2-year hourly sensor dataset
+idx = pd.date_range('2023-01-01', periods=365*24*2, freq='h')
+df = pd.DataFrame({
+    'temp':     20 + 10*np.sin(np.linspace(0,4*np.pi, len(idx)))
+                + np.random.randn(len(idx)),
+    'humidity': 50 + 20*np.cos(np.linspace(0,4*np.pi, len(idx)))
+                + np.random.randn(len(idx))
+}, index=idx)
+
+# a) Print shape and index frequency
+# b) Extract all data for July 2023
+# c) Add columns: hour, day_of_week, month
+# d) Find the hour with the highest average temperature
+#    (hint: groupby df['hour'])
+# e) How many readings had temp > 28?`,
+            solution: `# a
+print(df.shape, df.index.freq)
+# b
+july = df['2023-07']
+print(july.shape)
+# c
+df['hour']        = df.index.hour
+df['day_of_week'] = df.index.day_name()
+df['month']       = df.index.month
+# d
+print(df.groupby('hour')['temp'].mean().idxmax())
+# e
+print((df['temp'] > 28).sum())`
+          },
+          {
+            title: "12. Resampling — Changing Data Frequency",
+            theory: "Resampling is the time-series equivalent of GroupBy — it groups by a time bucket and applies an aggregation. Downsampling (hourly→daily) reduces noise. Upsampling (daily→hourly) creates gaps that need forward/back-fill. This is essential in ETL, reporting dashboards, and feature engineering for ML models.",
+            code: `import pandas as pd, numpy as np
+
+np.random.seed(42)
+idx = pd.date_range('2024-01-01', periods=365, freq='D')
+ts = pd.Series(
+    np.random.randint(1000, 5000, 365) +
+    np.sin(np.linspace(0, 4*np.pi, 365)) * 500,
+    index=idx, name='sales'
+)
+
+# --- Downsampling (less frequent) ---
+weekly  = ts.resample('W').sum()       # weekly totals
+monthly = ts.resample('ME').mean()     # monthly averages
+monthly_ohlc = ts.resample('ME').agg(  # OHLC — common in finance
+    open='first', high='max', low='min', close='last'
+)
+quarterly = ts.resample('QE').sum()
+
+# --- Upsampling (more frequent) ---
+daily_from_monthly = monthly.resample('D').ffill()   # forward fill gaps
+daily_interpolated = monthly.resample('D').interpolate('linear')
+
+# --- Multi-column DataFrame ---
+df = pd.DataFrame({'sales': ts, 'cost': ts * 0.6})
+monthly_df = df.resample('ME').agg({
+    'sales': 'sum',
+    'cost':  'sum'
+})
+monthly_df['profit'] = monthly_df['sales'] - monthly_df['cost']
+monthly_df['margin'] = (monthly_df['profit'] / monthly_df['sales'] * 100).round(1)
+print(monthly_df.head())`,
+            exercise: `# EXERCISE 12 — Sales frequency analysis
+np.random.seed(0)
+idx = pd.date_range('2022-01-01', periods=730, freq='D')  # 2 years daily
+sales = pd.Series(
+    np.random.randint(500, 3000, 730)
+    + np.sin(np.linspace(0, 8*np.pi, 730)) * 400  # seasonality
+    + np.linspace(0, 500, 730),  # growth trend
+    index=idx, name='daily_sales'
+)
+
+# a) Resample to weekly totals
+# b) Resample to monthly: compute sum, mean, max
+# c) Find the best and worst month (by total sales)
+# d) Upsample weekly data back to daily using linear interpolation
+# e) Which quarter had the highest total sales across both years?`,
+            solution: `# a
+weekly = sales.resample('W').sum()
+# b
+monthly = sales.resample('ME').agg(['sum','mean','max'])
+# c
+monthly_sum = sales.resample('ME').sum()
+print("Best: ", monthly_sum.idxmax().date())
+print("Worst:", monthly_sum.idxmin().date())
+# d
+weekly_up = weekly.resample('D').interpolate('linear')
+# e
+quarterly = sales.resample('QE').sum()
+print(quarterly.idxmax())`
+          },
+          {
+            title: "13. Rolling Windows & Lag Features",
+            theory: "Rolling windows compute metrics over a sliding time window — the technical foundation of moving averages, volatility bands, and exponential smoothing. Lag features (shift) are critical for ML forecasting — you cannot use future data to predict the present. These are the two most common time-series feature engineering patterns.",
+            code: `import pandas as pd, numpy as np
+
+np.random.seed(42)
+idx = pd.date_range('2024-01-01', periods=100, freq='D')
+prices = pd.Series(
+    100 + np.cumsum(np.random.randn(100)),
+    index=idx, name='price'
+)
+df = prices.to_frame()
+
+# --- Rolling aggregations ---
+df['MA7']   = prices.rolling(window=7).mean()    # 7-day moving average
+df['MA30']  = prices.rolling(window=30).mean()   # 30-day moving average
+df['std7']  = prices.rolling(window=7).std()     # 7-day volatility
+df['max7']  = prices.rolling(window=7).max()     # 7-day high
+
+# min_periods: don't require full window to start
+df['MA7_nw'] = prices.rolling(7, min_periods=1).mean()
+
+# --- Exponential weighted moving average (reacts faster to recent data) ---
+df['EMA12'] = prices.ewm(span=12).mean()
+
+# --- Lag features (for ML time series) ---
+df['lag_1']  = prices.shift(1)    # yesterday's price
+df['lag_7']  = prices.shift(7)    # same day last week
+df['lag_30'] = prices.shift(30)   # same day last month
+
+# --- Pct change — returns / growth rate ---
+df['daily_return'] = prices.pct_change()          # % change vs prev day
+df['weekly_return'] = prices.pct_change(7)        # % change vs 7 days ago
+
+# --- Diff — for stationarization ---
+df['diff1'] = prices.diff(1)    # first difference
+print(df.tail(10))`,
+            exercise: `# EXERCISE 13 — Stock-style analysis
+np.random.seed(1)
+idx = pd.date_range('2023-01-01', periods=252, freq='B')  # business days
+stock = pd.Series(
+    150 + np.cumsum(np.random.randn(252) * 2),
+    index=idx, name='close'
+)
+df = stock.to_frame()
+
+# a) Add 20-day and 50-day moving averages
+# b) Add 20-day rolling standard deviation (volatility proxy)
+# c) Add daily return (pct_change)
+# d) Add 5-day lag (last week's price)
+# e) Create 'signal': 1 if MA20 > MA50 (bullish), else 0
+# f) How many days were bullish?
+# g) What was the worst single-day return?`,
+            solution: `df['MA20'] = stock.rolling(20).mean()
+df['MA50'] = stock.rolling(50).mean()
+df['vol20'] = stock.rolling(20).std()
+df['ret']   = stock.pct_change()
+df['lag5']  = stock.shift(5)
+df['signal'] = (df['MA20'] > df['MA50']).astype(int)
+print("Bullish days:", df['signal'].sum())
+print("Worst day:   ", df['ret'].min().round(4))`
+          },
+          {
+            title: "14. Timezone Handling",
+            theory: "Naive datetimes (no tz info) silently cause wrong aggregations across DST boundaries or multi-region data. Production pipelines store everything in UTC and convert to local time only for display. Pandas uses the IANA tz database (America/New_York, etc.) — never use raw UTC offsets like +05:30 for recurring events.",
+            code: `import pandas as pd
+
+# --- Timezone-aware timestamps ---
+ts_utc = pd.Timestamp('2024-06-15 14:30:00', tz='UTC')
+ts_ny  = ts_utc.tz_convert('America/New_York')  # UTC-4 in summer
+ts_ist = ts_utc.tz_convert('Asia/Kolkata')      # UTC+5:30
+print(ts_utc)   # 2024-06-15 14:30:00+00:00
+print(ts_ny)    # 2024-06-15 10:30:00-04:00
+print(ts_ist)   # 2024-06-15 20:00:00+05:30
+
+# --- Localizing a naive DatetimeIndex ---
+idx_naive = pd.date_range('2024-01-01', periods=5, freq='h')
+idx_utc   = idx_naive.tz_localize('UTC')
+idx_local = idx_utc.tz_convert('America/Chicago')
+
+# --- Timezone-aware DataFrame ---
+df = pd.DataFrame({
+    'event_utc': pd.date_range('2024-03-09 00:00', periods=10,
+                               freq='h', tz='UTC'),  # includes DST boundary
+    'value': range(10)
+})
+df['event_ny'] = df['event_utc'].dt.tz_convert('America/New_York')
+df['event_ist'] = df['event_utc'].dt.tz_convert('Asia/Kolkata')
+
+# --- Production pattern: strip tz for storage ---
+df['utc_naive'] = df['event_utc'].dt.tz_localize(None)
+
+# --- Compare: always align to UTC first ---
+t1 = pd.Timestamp('2024-01-01 10:00', tz='America/New_York')
+t2 = pd.Timestamp('2024-01-01 15:30', tz='UTC')
+print(t1 < t2)  # True — Pandas aligns to UTC automatically`,
+            exercise: `# EXERCISE 14 — Multi-region event log
+import pandas as pd
+
+# Simulate server events logged in different timezones
+events = pd.DataFrame({
+    'server': ['US-East','US-West','India','Germany','UK'],
+    'event_time_local': [
+        '2024-07-04 09:00:00',
+        '2024-07-04 06:00:00',
+        '2024-07-04 18:30:00',
+        '2024-07-04 15:00:00',
+        '2024-07-04 14:00:00'
+    ],
+    'timezone': [
+        'America/New_York',
+        'America/Los_Angeles',
+        'Asia/Kolkata',
+        'Europe/Berlin',
+        'Europe/London'
+    ]
+})
+
+# a) Convert each event_time_local to a tz-aware Timestamp
+#    (hint: iterate and use pd.Timestamp(t, tz=tz))
+# b) Convert all to UTC
+# c) Which event happened FIRST globally?
+# d) Which event happened LAST globally?
+# e) What is the time difference (in hours) between first and last?`,
+            solution: `events['ts_local'] = [
+    pd.Timestamp(t, tz=z)
+    for t, z in zip(events['event_time_local'], events['timezone'])
+]
+events['ts_utc'] = events['ts_local'].apply(lambda x: x.tz_convert('UTC'))
+print("First:", events.loc[events['ts_utc'].idxmin(), 'server'])
+print("Last: ", events.loc[events['ts_utc'].idxmax(), 'server'])
+diff = (events['ts_utc'].max() - events['ts_utc'].min())
+print("Span:", diff.total_seconds() / 3600, "hours")`
+          }
+        ]
+      },
+      {
+        id: "performance",
+        tag: "PERFORMANCE",
+        color: "#F97316",
+        accent: "#2C0E00",
+        time: "Day 2 · Midday",
+        title: "Large-Scale Performance — Memory, Speed & Out-of-Core",
+        why: "Pandas loads everything into RAM. On a 16GB laptop, that means any file over ~6GB will crash your kernel. Even with smaller files, a single .apply() on 10M rows can take 3 minutes when a vectorized equivalent takes 0.1 seconds. Understanding performance is what separates a data scientist who works on samples from an engineer who ships production pipelines.",
+        sections: [
+          {
+            title: "15. Memory Optimization with dtypes",
+            theory: "By default Pandas uses int64 and float64 — 8 bytes per value. Downcasting to int8/float32 or using Categorical for low-cardinality strings can shrink a DataFrame to 10–25% of its original size — the difference between fitting in RAM and crashing.",
+            code: `import pandas as pd, numpy as np
+
+# --- Simulate a 'fat' DataFrame ---
+np.random.seed(42)
+n = 1_000_000
+df = pd.DataFrame({
+    'user_id':  np.random.randint(1, 100000, n),       # int64 default
+    'age':      np.random.randint(18, 80, n),           # only 0-127 needed!
+    'score':    np.random.uniform(0, 100, n),           # float64, maybe float32 ok
+    'country':  np.random.choice(['US','UK','IN','DE'], n),  # 4 unique strings
+    'status':   np.random.choice(['active','inactive','pending'], n),
+})
+
+print("BEFORE:")
+print(df.info(memory_usage='deep'))   # shows total RAM used
+
+# --- Downcast numerics ---
+df['user_id'] = pd.to_numeric(df['user_id'], downcast='unsigned')
+df['age']     = df['age'].astype(np.int8)      # 1 byte: range -128 to 127
+df['score']   = df['score'].astype(np.float32) # 4 bytes vs 8
+
+# --- Categorical for low-cardinality strings ---
+# Categorical stores 4 unique values + an integer code array
+# vs storing 1M full strings
+df['country'] = df['country'].astype('category')
+df['status']  = df['status'].astype('category')
+
+print("\\nAFTER:")
+print(df.info(memory_usage='deep'))
+# Typical result: 70–80% memory reduction
+
+# --- What you can still do with Categorical ---
+print(df['country'].cat.categories)    # ['DE', 'IN', 'UK', 'US']
+print(df['country'].cat.codes.head())  # [0,1,2,...] integer codes
+print(df.groupby('country')['score'].mean())  # groupby still works!`,
+            exercise: `# EXERCISE 15 — Shrink a DataFrame
+import pandas as pd, numpy as np
+np.random.seed(99)
+n = 500_000
+
+df = pd.DataFrame({
+    'order_id':   np.random.randint(1, 10**7, n),
+    'product_id': np.random.randint(1, 5000, n),
+    'quantity':   np.random.randint(1, 50, n),
+    'price':      np.random.uniform(5.0, 500.0, n),
+    'region':     np.random.choice(['NA','EU','APAC','LATAM'], n),
+    'status':     np.random.choice(['shipped','pending','returned','cancelled'], n),
+})
+
+# a) Print initial memory usage (memory_usage='deep')
+# b) Downcast order_id, product_id, quantity to smallest int
+# c) Downcast price to float32
+# d) Convert region and status to Categorical
+# e) Print final memory usage
+# f) Calculate % memory saved`,
+            solution: `print("Before:", df.memory_usage(deep=True).sum() / 1e6, "MB")
+df['order_id']   = pd.to_numeric(df['order_id'],   downcast='unsigned')
+df['product_id'] = pd.to_numeric(df['product_id'], downcast='unsigned')
+df['quantity']   = df['quantity'].astype(np.int8)
+df['price']      = df['price'].astype(np.float32)
+df['region']     = df['region'].astype('category')
+df['status']     = df['status'].astype('category')
+after = df.memory_usage(deep=True).sum() / 1e6
+print("After:", round(after, 1), "MB")`
+          },
+          {
+            title: "16. Chunking Large Files",
+            theory: "chunksize makes pd.read_csv() return an iterator instead of loading the whole file at once. Each chunk is a normal DataFrame. You process and discard it before loading the next. This is the standard pattern for files larger than available RAM — it's how ETL pipelines process 10–100GB files on modest hardware.",
+            code: `import pandas as pd, io
+
+# --- Simulate a large file (use a real CSV path in practice) ---
+# For demo purposes, create an in-memory CSV
+csv_content = "id,amount,region\\n"
+for i in range(1, 10001):
+    csv_content += f"{i},{i*10},{['NA','EU','APAC'][i%3]}\\n"
+fake_file = io.StringIO(csv_content)
+
+# --- Pattern 1: Accumulate filtered results ---
+results = []
+chunk_iter = pd.read_csv(fake_file, chunksize=1000)
+for chunk in chunk_iter:
+    # Process only what you need
+    filtered = chunk[chunk['amount'] > 50000]
+    results.append(filtered)
+
+if results:
+    final = pd.concat(results, ignore_index=True)
+
+# --- Pattern 2: Running aggregation (no accumulation) ---
+fake_file.seek(0)   # reset file pointer
+total_by_region = {}
+for chunk in pd.read_csv(fake_file, chunksize=1000):
+    for region, group in chunk.groupby('region'):
+        total = group['amount'].sum()
+        total_by_region[region] = total_by_region.get(region, 0) + total
+
+print(total_by_region)
+
+# --- Pattern 3: Memory-safe dtype specification at read time ---
+# (avoid loading then downcasting — specify upfront)
+# df = pd.read_csv('huge.csv', dtype={
+#     'id': 'uint32', 'amount': 'float32', 'region': 'category'
+# }, chunksize=50000)`,
+            exercise: `# EXERCISE 16 — Chunk processing
+import pandas as pd, io, numpy as np
+
+# Generate a simulated 100k-row CSV in memory
+np.random.seed(5)
+rows = ['transaction_id,user_id,amount,category,month']
+for i in range(100_000):
+    rows.append(f"{i},{np.random.randint(1,1000)},"
+                f"{round(np.random.uniform(10,500),2)},"
+                f"{np.random.choice(['Food','Tech','Travel','Health'])},"
+                f"{np.random.randint(1,13)}")
+fake_csv = io.StringIO('\\n'.join(rows))
+
+# Process in chunks of 10,000 rows:
+# a) Count total transactions per category (running sum, no accumulation)
+# b) Find total revenue per category
+# c) How many transactions had amount > 400?
+# d) Print final results (do NOT concat all chunks into memory)`,
+            solution: `cat_count  = {}
+cat_revenue= {}
+high_value = 0
+
+for chunk in pd.read_csv(fake_csv, chunksize=10_000):
+    for cat, grp in chunk.groupby('category'):
+        cat_count[cat]   = cat_count.get(cat, 0)   + len(grp)
+        cat_revenue[cat] = cat_revenue.get(cat, 0) + grp['amount'].sum()
+    high_value += (chunk['amount'] > 400).sum()
+
+print("Counts: ", cat_count)
+print("Revenue:", {k: round(v,2) for k,v in cat_revenue.items()})
+print("High-value txns:", high_value)`
+          },
+          {
+            title: "17. Vectorized Alternatives to .apply()",
+            theory: "Every .apply(lambda row: ..., axis=1) is a Python-speed for-loop over rows. np.where() and np.select() execute the same conditional logic in C-speed vectorized operations. On 1M rows, this can be a 50–200x speedup. This is the single most impactful performance optimization in data work.",
+            code: `import pandas as pd, numpy as np, time
+
+np.random.seed(42)
+n = 1_000_000
+df = pd.DataFrame({
+    'salary':  np.random.randint(30000, 200000, n).astype(float),
+    'age':     np.random.randint(22, 65, n),
+    'dept':    np.random.choice(['Eng','Sales','HR','Marketing'], n),
+    'rating':  np.random.randint(1, 6, n)
+})
+
+# ---- CASE 1: Binary condition ----
+# SLOW (apply)
+t = time.time()
+df['band_slow'] = df['salary'].apply(lambda x: 'Senior' if x > 100000 else 'Junior')
+print(f"apply:    {time.time()-t:.3f}s")
+
+# FAST (np.where)
+t = time.time()
+df['band_fast'] = np.where(df['salary'] > 100000, 'Senior', 'Junior')
+print(f"np.where: {time.time()-t:.3f}s")
+
+# ---- CASE 2: Multiple conditions ----
+# SLOW
+t = time.time()
+def classify(row):
+    if row['salary'] > 150000: return 'L5'
+    elif row['salary'] > 100000: return 'L4'
+    elif row['salary'] > 70000:  return 'L3'
+    else:                        return 'L2'
+df['level_slow'] = df.apply(classify, axis=1)
+print(f"apply row: {time.time()-t:.3f}s")
+
+# FAST (np.select — multiple conditions, vectorized)
+t = time.time()
+conditions = [
+    df['salary'] > 150000,
+    df['salary'] > 100000,
+    df['salary'] > 70000,
+]
+choices = ['L5', 'L4', 'L3']
+df['level_fast'] = np.select(conditions, choices, default='L2')
+print(f"np.select: {time.time()-t:.3f}s")
+
+# Verify same result
+print("Results match:", (df['level_slow'] == df['level_fast']).all())`,
+            exercise: `# EXERCISE 17 — Vectorize everything
+import pandas as pd, numpy as np
+np.random.seed(7)
+n = 500_000
+
+df = pd.DataFrame({
+    'score':   np.random.randint(0, 101, n),
+    'attempts':np.random.randint(1, 6, n),
+    'passed':  np.random.choice([True, False], n),
+    'country': np.random.choice(['US','UK','IN','DE','BR'], n)
+})
+
+# Rewrite ALL of these as vectorized (np.where or np.select):
+# a) grade: A(90+), B(75+), C(60+), D(50+), F(below 50)
+# b) bonus: 10 if passed and score>80, 5 if passed, 0 otherwise
+# c) risk: 'high' if attempts>=4 and not passed, else 'low'
+# d) label: country code + '-' + grade  (e.g. 'US-A')
+#    hint: use pd.Series.str operations after vectorized grade`,
+            solution: `# a
+conds  = [df['score']>=90, df['score']>=75, df['score']>=60, df['score']>=50]
+grades = ['A','B','C','D']
+df['grade'] = np.select(conds, grades, default='F')
+
+# b
+df['bonus'] = np.select(
+    [df['passed'] & (df['score']>80), df['passed']],
+    [10, 5], default=0)
+
+# c
+df['risk'] = np.where((df['attempts']>=4) & (~df['passed']), 'high', 'low')
+
+# d
+df['label'] = df['country'] + '-' + df['grade']
+print(df[['score','grade','bonus','risk','label']].head(10))`
+          }
+        ]
+      },
+      {
+        id: "validation",
+        tag: "VALIDATION",
+        color: "#10B981",
+        accent: "#022016",
+        time: "Day 2 · Afternoon",
+        title: "Data Validation & Pipeline Testing",
+        why: "A data pipeline that runs without errors can still produce wrong results silently — wrong dtypes, unexpected nulls, out-of-range values, schema drift from upstream APIs. Production pipelines need assertion layers and unit tests. This module teaches you to build defensive pipelines that fail loudly and correctly instead of silently producing garbage.",
+        sections: [
+          {
+            title: "18. Schema Enforcement & Runtime Assertions",
+            theory: "Data contracts define what your DataFrame must look like: column names, dtypes, null constraints, value ranges. Asserting these at pipeline entry points catches upstream drift (an API changing 'salary' from float to string) before it propagates and corrupts downstream tables or ML models.",
+            code: `import pandas as pd, numpy as np
+
+# --- The problem: silent schema drift ---
+# Scenario: upstream API sends salary as string one day
+bad_df = pd.DataFrame({
+    'name':   ['Alice', 'Bob'],
+    'salary': ['75000', '90000'],   # strings, not numbers!
+    'age':    [25, None]
+})
+# This silently 'works' but sum/mean will fail or be wrong
+print(bad_df['salary'].sum())   # '7500090000' (string concat!!)
+
+# --- Pattern 1: Manual assertions ---
+def validate_employee_df(df: pd.DataFrame) -> None:
+    """Raise informative errors on schema violation."""
+    required = {'name', 'salary', 'age', 'dept'}
+    missing = required - set(df.columns)
+    assert not missing, f"Missing columns: {missing}"
+
+    assert df['salary'].dtype in ['float64','int64'], (
+        f"salary must be numeric, got {df['salary'].dtype}"
+    )
+    assert df['salary'].notna().all(), "salary has null values"
+    assert (df['salary'] > 0).all(), "salary must be positive"
+    assert df['age'].between(18, 100).all(), "age out of range [18,100]"
+    assert df['name'].notna().all(), "name column has nulls"
+
+# --- Pattern 2: Auto-coerce + validate ---
+def load_and_validate(raw: pd.DataFrame) -> pd.DataFrame:
+    df = raw.copy()
+    # Coerce types defensively
+    df['salary'] = pd.to_numeric(df['salary'], errors='coerce')
+    df['age']    = pd.to_numeric(df['age'],    errors='coerce')
+    df['name']   = df['name'].astype(str).str.strip()
+
+    # Assert after coercion
+    null_salary = df['salary'].isnull().sum()
+    if null_salary > 0:
+        raise ValueError(f"{null_salary} salary values could not be parsed")
+
+    return df
+
+# --- Pattern 3: Dtype enforcement on read ---
+# Fail fast at CSV load time (production pattern)
+# pd.read_csv('employees.csv', dtype={
+#     'salary': float, 'age': 'Int64', 'dept': 'category'
+# })`,
+            exercise: `# EXERCISE 18 — Write a validation function
+import pandas as pd, numpy as np
+
+def validate_orders(df: pd.DataFrame) -> dict:
+    """
+    Validate an orders DataFrame. Return a dict of issues found:
+    {
+      'missing_cols': [...],
+      'type_errors': {...},
+      'null_counts': {...},
+      'range_errors': {...}
+    }
+    """
+    issues = {'missing_cols':[], 'type_errors':{},
+              'null_counts':{}, 'range_errors':{}}
+
+    required_cols = ['order_id','customer_id','amount','quantity','status']
+    valid_statuses = {'pending','shipped','delivered','cancelled'}
+
+    # YOUR CODE — fill in each check:
+    # a) Check for missing columns
+    # b) Check amount is numeric
+    # c) Check null counts in all required columns
+    # d) Check amount > 0 and quantity > 0
+    # e) Check status is one of valid_statuses
+    
+    return issues
+
+# Test with a bad DataFrame
+bad = pd.DataFrame({
+    'order_id':    [1, 2, 3, None],
+    'customer_id': [10, 20, 30, 40],
+    'amount':      [-50, 'N/A', 200, 150],
+    'quantity':    [1, 2, 0, 3],
+    'status':      ['shipped','unknown','delivered','pending']
+})
+print(validate_orders(bad))`,
+            solution: `def validate_orders(df):
+    issues = {'missing_cols':[], 'type_errors':{},
+              'null_counts':{}, 'range_errors':{}}
+    required = ['order_id','customer_id','amount','quantity','status']
+    valid_s  = {'pending','shipped','delivered','cancelled'}
+
+    # a
+    issues['missing_cols'] = [c for c in required if c not in df.columns]
+
+    # b
+    try:
+        pd.to_numeric(df['amount'], errors='raise')
+    except Exception:
+        issues['type_errors']['amount'] = 'non-numeric values present'
+
+    # c
+    issues['null_counts'] = {c: int(df[c].isnull().sum())
+                              for c in required if c in df.columns
+                              and df[c].isnull().sum() > 0}
+    # d
+    num_amount = pd.to_numeric(df['amount'], errors='coerce')
+    if (num_amount <= 0).any():
+        issues['range_errors']['amount'] = 'values <= 0 found'
+    if (df['quantity'] <= 0).any():
+        issues['range_errors']['quantity'] = 'values <= 0 found'
+
+    # e
+    bad_status = set(df['status'].unique()) - valid_s
+    if bad_status:
+        issues['range_errors']['status'] = f'invalid values: {bad_status}'
+
+    return issues`
+          },
+          {
+            title: "19. Unit Testing Transformation Functions",
+            theory: "Transformation functions (salary_band, normalize, clean_phone) must be unit tested. As data changes shape, tests catch regressions before they reach production. The pytest pattern with parametrize is the industry standard — each test case is a named scenario that maps inputs to expected outputs.",
+            code: `import pandas as pd, numpy as np
+
+# --- The transformation function we want to test ---
+def compute_salary_band(df: pd.DataFrame) -> pd.DataFrame:
+    """Add salary_band column: Senior/Mid/Junior based on salary."""
+    df = df.copy()
+    conditions = [df['salary'] > 120000, df['salary'] > 80000]
+    choices    = ['Senior', 'Mid']
+    df['salary_band'] = np.select(conditions, choices, default='Junior')
+    return df
+
+def normalize_column(series: pd.Series) -> pd.Series:
+    """Min-max normalize a series to [0, 1]."""
+    mn, mx = series.min(), series.max()
+    if mn == mx:
+        return pd.Series(np.zeros(len(series)), index=series.index)
+    return (series - mn) / (mx - mn)
+
+# --- Unit tests (paste into test_transforms.py and run with pytest) ---
+import pytest
+
+class TestSalaryBand:
+    def test_senior_threshold(self):
+        df = pd.DataFrame({'salary': [150000]})
+        result = compute_salary_band(df)
+        assert result['salary_band'].iloc[0] == 'Senior'
+
+    def test_mid_threshold(self):
+        df = pd.DataFrame({'salary': [100000]})
+        result = compute_salary_band(df)
+        assert result['salary_band'].iloc[0] == 'Mid'
+
+    def test_junior_threshold(self):
+        df = pd.DataFrame({'salary': [60000]})
+        result = compute_salary_band(df)
+        assert result['salary_band'].iloc[0] == 'Junior'
+
+    def test_boundary_exactly_at_threshold(self):
+        df = pd.DataFrame({'salary': [120000]})
+        result = compute_salary_band(df)
+        assert result['salary_band'].iloc[0] == 'Mid'  # NOT Senior (> not >=)
+
+    def test_does_not_mutate_input(self):
+        df = pd.DataFrame({'salary': [100000]})
+        original_cols = set(df.columns)
+        compute_salary_band(df)
+        assert set(df.columns) == original_cols  # df unchanged
+
+class TestNormalize:
+    def test_range_is_0_to_1(self):
+        s = pd.Series([10, 20, 30, 40, 50])
+        result = normalize_column(s)
+        assert result.min() == pytest.approx(0.0)
+        assert result.max() == pytest.approx(1.0)
+
+    def test_constant_series_returns_zeros(self):
+        s = pd.Series([5, 5, 5, 5])
+        result = normalize_column(s)
+        assert (result == 0).all()
+
+    @pytest.mark.parametrize("values,expected_first", [
+        ([0, 100], 0.0),
+        ([50, 100], 0.0),
+    ])
+    def test_parametrized(self, values, expected_first):
+        result = normalize_column(pd.Series(values))
+        assert result.iloc[0] == pytest.approx(expected_first)
+
+# --- Quick manual run (without pytest) ---
+t = TestSalaryBand()
+t.test_senior_threshold()
+t.test_does_not_mutate_input()
+t2 = TestNormalize()
+t2.test_range_is_0_to_1()
+t2.test_constant_series_returns_zeros()
+print("All manual tests passed.")`,
+            exercise: `# EXERCISE 19 — Write tests for this function
+import pandas as pd, numpy as np
+
+def clean_and_enrich(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    1. Strip and title-case the 'name' column
+    2. Fill null 'age' with median age
+    3. Add 'age_group': 'Young'(<30), 'Mid'(30-50), 'Senior'(>50)
+    4. Add 'high_earner': True if salary > dept median salary
+    """
+    df = df.copy()
+    df['name'] = df['name'].str.strip().str.title()
+    df['age']  = df['age'].fillna(df['age'].median())
+    age_conds  = [df['age'] < 30, df['age'] <= 50]
+    df['age_group'] = np.select(age_conds, ['Young','Mid'], default='Senior')
+    dept_med = df.groupby('dept')['salary'].transform('median')
+    df['high_earner'] = df['salary'] > dept_med
+    return df
+
+# Write at least 5 test cases:
+# a) name is stripped and title-cased
+# b) null age is filled with median
+# c) age_group boundaries are correct (test 29, 30, 50, 51)
+# d) high_earner is True only for above-dept-median
+# e) original df is not mutated`,
+            solution: `def make_df():
+    return pd.DataFrame({
+        'name':   ['  alice ', 'BOB', 'carol'],
+        'age':    [25.0, np.nan, 55.0],
+        'salary': [80000, 120000, 95000],
+        'dept':   ['Eng', 'Eng', 'Sales']
+    })
+
+# a
+df = clean_and_enrich(make_df())
+assert df['name'].tolist() == ['Alice','Bob','Carol']
+
+# b
+df = clean_and_enrich(make_df())
+assert df['age'].isnull().sum() == 0
+
+# c
+for age, expected in [(29,'Young'),(30,'Mid'),(50,'Mid'),(51,'Senior')]:
+    tmp = make_df().copy(); tmp['age'] = age
+    r = clean_and_enrich(tmp)
+    assert r['age_group'].iloc[0] == expected, f"Failed age={age}"
+
+# d
+df = clean_and_enrich(make_df())
+# Bob earns 120k vs Eng median=100k → high_earner=True
+assert df.loc[df['name']=='Bob','high_earner'].iloc[0] == True
+
+# e
+original = make_df()
+_ = clean_and_enrich(original)
+assert 'age_group' not in original.columns
+
+print("All 5 tests passed.")`
+          }
+        ]
+      },
+      {
+        id: "visualization",
+        tag: "VISUALIZATION",
+        color: "#A855F7",
+        accent: "#1A0733",
+        time: "Day 2 · Evening",
+        title: "Visualization & Storytelling — From Data to Insight",
+        why: "Data engineering ends with a clean table. A project ends with an insight that drives action. Visualization is the translation layer between your transformed DataFrames and a decision-maker's understanding. Matplotlib is the low-level engine. Seaborn is the statistical layer. Plotly is the interactive production layer. You need all three in your toolkit.",
+        sections: [
+          {
+            title: "20. Matplotlib — The Foundation",
+            theory: "Every Python visualization library sits on top of Matplotlib. Understanding its Figure/Axes object model is essential — it lets you precisely control every element of a chart and compose multi-panel dashboards. Pandas .plot() is a shortcut that calls Matplotlib internally.",
+            code: `import matplotlib.pyplot as plt
+import pandas as pd, numpy as np
+
+np.random.seed(42)
+dates  = pd.date_range('2024-01-01', periods=90, freq='D')
+sales  = pd.Series(2000 + np.cumsum(np.random.randn(90)*50), index=dates)
+ma7    = sales.rolling(7).mean()
+
+# --- Figure/Axes object model ---
+fig, axes = plt.subplots(2, 2, figsize=(14, 9))
+fig.suptitle('Sales Dashboard', fontsize=16, fontweight='bold')
+
+# Panel 1: Time series + moving average
+ax = axes[0, 0]
+ax.plot(sales.index, sales.values, alpha=0.4, color='steelblue', label='Daily')
+ax.plot(ma7.index, ma7.values, color='crimson', linewidth=2, label='7-day MA')
+ax.set_title('Daily Sales with Moving Average')
+ax.legend(); ax.grid(alpha=0.3)
+
+# Panel 2: Monthly bar chart
+monthly = sales.resample('ME').sum()
+ax = axes[0, 1]
+ax.bar(range(len(monthly)), monthly.values, color='steelblue', alpha=0.8)
+ax.set_xticks(range(len(monthly)))
+ax.set_xticklabels([d.strftime('%b') for d in monthly.index], rotation=45)
+ax.set_title('Monthly Totals')
+
+# Panel 3: Histogram
+ax = axes[1, 0]
+ax.hist(sales.values, bins=20, color='mediumseagreen', edgecolor='white', alpha=0.8)
+ax.axvline(sales.mean(), color='red', linestyle='--', label=f'Mean: {sales.mean():.0f}')
+ax.set_title('Sales Distribution'); ax.legend()
+
+# Panel 4: Rolling std (volatility)
+ax = axes[1, 1]
+ax.fill_between(sales.index, sales.rolling(7).std(), color='orange', alpha=0.6)
+ax.set_title('7-day Rolling Volatility')
+
+plt.tight_layout()
+plt.savefig('dashboard.png', dpi=150, bbox_inches='tight')
+plt.show()`,
+            exercise: `# EXERCISE 20 — Build a 3-panel figure
+import matplotlib.pyplot as plt
+import pandas as pd, numpy as np
+np.random.seed(1)
+
+# Dataset: monthly revenue by product category over 1 year
+months = pd.date_range('2024-01', periods=12, freq='ME')
+df = pd.DataFrame({
+    'Electronics': np.random.randint(50000, 120000, 12),
+    'Clothing':    np.random.randint(20000, 60000, 12),
+    'Books':       np.random.randint(5000,  20000, 12),
+}, index=months)
+
+# Build a 1x3 figure:
+# Panel 1: Line chart of all 3 categories over time
+# Panel 2: Stacked bar chart of monthly totals
+# Panel 3: Pie chart of total revenue by category
+# Add titles, legend, tight_layout, save as 'revenue.png'`,
+            solution: `fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+fig.suptitle('Revenue Analysis 2024', fontsize=14, fontweight='bold')
+labels = [d.strftime('%b') for d in df.index]
+
+# Panel 1
+for col in df.columns:
+    axes[0].plot(df.index, df[col], marker='o', markersize=4, label=col)
+axes[0].set_title('Monthly Revenue by Category')
+axes[0].legend(); axes[0].grid(alpha=0.3)
+axes[0].tick_params(axis='x', rotation=45)
+
+# Panel 2
+bottom = np.zeros(12)
+for col, color in zip(df.columns, ['steelblue','coral','mediumseagreen']):
+    axes[1].bar(range(12), df[col], bottom=bottom, label=col, color=color, alpha=0.85)
+    bottom += df[col].values
+axes[1].set_xticks(range(12)); axes[1].set_xticklabels(labels, rotation=45)
+axes[1].set_title('Stacked Monthly Totals'); axes[1].legend()
+
+# Panel 3
+totals = df.sum()
+axes[2].pie(totals, labels=totals.index, autopct='%1.1f%%',
+            colors=['steelblue','coral','mediumseagreen'])
+axes[2].set_title('Total Revenue Share')
+
+plt.tight_layout()
+plt.savefig('revenue.png', dpi=150, bbox_inches='tight')
+plt.show()`
+          },
+          {
+            title: "21. Seaborn — Statistical Visualization",
+            theory: "Seaborn adds a statistical abstraction layer over Matplotlib. Its key superpower is hue — automatically splitting any chart by a categorical variable. It also handles long-format data natively (output of pd.melt()), which is why the melt pattern from Module 10 directly feeds Seaborn charts.",
+            code: `import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd, numpy as np
+
+np.random.seed(42)
+n = 300
+df = pd.DataFrame({
+    'dept':   np.random.choice(['Eng','Sales','HR','Marketing'], n),
+    'level':  np.random.choice(['Junior','Mid','Senior'], n),
+    'salary': np.random.randint(50000, 180000, n),
+    'yoe':    np.random.randint(0, 20, n),
+    'rating': np.random.randint(1, 6, n)
+})
+
+sns.set_theme(style='darkgrid', palette='muted')
+fig, axes = plt.subplots(2, 3, figsize=(16, 10))
+
+# 1. Boxplot — distribution per group
+sns.boxplot(data=df, x='dept', y='salary', hue='level', ax=axes[0,0])
+axes[0,0].set_title('Salary Distribution by Dept + Level')
+
+# 2. Violin — shape of distribution
+sns.violinplot(data=df, x='dept', y='salary', ax=axes[0,1], inner='box')
+axes[0,1].set_title('Salary Violin Plot')
+
+# 3. Scatterplot — relationship + hue
+sns.scatterplot(data=df, x='yoe', y='salary', hue='dept',
+                alpha=0.6, ax=axes[0,2])
+axes[0,2].set_title('Salary vs Experience')
+
+# 4. Barplot — mean + confidence interval
+sns.barplot(data=df, x='dept', y='salary', hue='level',
+            errorbar='sd', ax=axes[1,0])
+axes[1,0].set_title('Mean Salary ± SD')
+
+# 5. Heatmap — correlation matrix
+numeric = df[['salary','yoe','rating']].corr()
+sns.heatmap(numeric, annot=True, fmt='.2f', cmap='coolwarm', ax=axes[1,1])
+axes[1,1].set_title('Correlation Matrix')
+
+# 6. Histogram with KDE
+sns.histplot(data=df, x='salary', hue='dept', kde=True,
+             multiple='stack', ax=axes[1,2])
+axes[1,2].set_title('Salary Distribution by Dept')
+
+plt.tight_layout()
+plt.savefig('seaborn_dashboard.png', dpi=150)
+plt.show()`,
+            exercise: `# EXERCISE 21 — Seaborn EDA Dashboard
+import seaborn as sns, matplotlib.pyplot as plt
+import pandas as pd, numpy as np
+np.random.seed(3)
+
+titanic_like = pd.DataFrame({
+    'survived': np.random.choice([0, 1], 800, p=[0.62, 0.38]),
+    'pclass':   np.random.choice([1, 2, 3], 800, p=[0.24, 0.21, 0.55]),
+    'sex':      np.random.choice(['male','female'], 800, p=[0.65, 0.35]),
+    'age':      np.random.normal(30, 14, 800).clip(1, 80),
+    'fare':     np.random.exponential(30, 800).clip(0, 300),
+    'embarked': np.random.choice(['S','C','Q'], 800, p=[0.72, 0.19, 0.09])
+})
+
+# Build a 2x3 EDA dashboard:
+# a) Countplot: survival rate by sex (hue=survived)
+# b) Boxplot: fare distribution by pclass (hue=survived)
+# c) Histplot: age distribution with hue=survived, kde=True
+# d) Barplot: survival rate by pclass (mean of survived column)
+# e) Heatmap: correlation of numeric columns
+# f) Violinplot: age by pclass, hue=sex`,
+            solution: `sns.set_theme(style='darkgrid')
+fig, axes = plt.subplots(2, 3, figsize=(16, 10))
+fig.suptitle('Passenger EDA Dashboard', fontsize=14, fontweight='bold')
+
+sns.countplot(data=titanic_like, x='sex', hue='survived', ax=axes[0,0])
+axes[0,0].set_title('Survival by Sex')
+
+sns.boxplot(data=titanic_like, x='pclass', y='fare',
+            hue='survived', ax=axes[0,1])
+axes[0,1].set_title('Fare by Class + Survival')
+
+sns.histplot(data=titanic_like, x='age', hue='survived',
+             kde=True, multiple='stack', ax=axes[0,2])
+axes[0,2].set_title('Age Distribution')
+
+sns.barplot(data=titanic_like, x='pclass', y='survived',
+            errorbar='ci', ax=axes[1,0])
+axes[1,0].set_title('Survival Rate by Class')
+
+corr = titanic_like[['survived','pclass','age','fare']].corr()
+sns.heatmap(corr, annot=True, fmt='.2f', cmap='coolwarm', ax=axes[1,1])
+axes[1,1].set_title('Correlation Matrix')
+
+sns.violinplot(data=titanic_like, x='pclass', y='age',
+               hue='sex', split=True, ax=axes[1,2])
+axes[1,2].set_title('Age by Class + Sex')
+
+plt.tight_layout()
+plt.savefig('eda_dashboard.png', dpi=150)
+plt.show()`
+          },
+          {
+            title: "🚀 FINAL CAPSTONE — Full Project: Stock Analysis Report",
+            theory: "This combines ALL 8 modules: NumPy vectorization, DataFrame creation, null handling, transforms, GroupBy, time series resampling, rolling windows, validation, and multi-panel visualization. This is the kind of project you'd find in a real data analyst/engineer portfolio.",
+            code: `# FULL PROJECT: Stock Portfolio Analysis
+# Combines: time series + resampling + rolling + visualization + validation
+import pandas as pd, numpy as np
+import matplotlib.pyplot as plt, matplotlib.gridspec as gridspec
+
+np.random.seed(42)
+
+# ── 1. GENERATE DATA ────────────────────────────────────────────────
+tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN']
+dates   = pd.date_range('2022-01-01', '2024-12-31', freq='B')  # business days
+
+prices = {}
+for i, ticker in enumerate(tickers):
+    start = [150, 300, 2800, 3300][i]
+    returns = np.random.normal(0.0005, 0.015, len(dates))
+    prices[ticker] = start * np.exp(np.cumsum(returns))
+
+df = pd.DataFrame(prices, index=dates)
+
+# Inject some nulls (simulate missing market data)
+for t in tickers:
+    df.loc[df.sample(frac=0.01).index, t] = np.nan`,
+            exercise: `# Complete the pipeline:
+
+# STEP 1 — VALIDATE
+# Assert no duplicate dates, index is DatetimeIndex
+# Print null counts per ticker
+
+# STEP 2 — CLEAN
+# Forward-fill missing prices (market was just closed)
+# Assert no nulls remain
+
+# STEP 3 — COMPUTE FEATURES (per ticker)
+# daily_returns = pct_change()
+# ma20, ma50    = rolling means
+# vol20         = rolling(20).std() on returns
+
+# STEP 4 — RESAMPLE
+# monthly_prices = last price of each month
+# monthly_returns = sum of daily returns per month
+
+# STEP 5 — CORRELATION
+# Compute correlation matrix of daily returns
+# Print: which pair of stocks is most correlated?
+
+# STEP 6 — DASHBOARD (2x3 figure)
+# Panel 1: Normalized price history (all 4 tickers, base=100)
+# Panel 2: Monthly returns heatmap (months x tickers)
+# Panel 3: 20-day rolling volatility
+# Panel 4: Correlation heatmap
+# Panel 5: Distribution of daily returns (histplot for each ticker)
+# Panel 6: Drawdown chart for best performing ticker`,
+            solution: `# STEP 1
+assert isinstance(df.index, pd.DatetimeIndex)
+assert df.index.duplicated().sum() == 0
+print("Nulls:", df.isnull().sum())
+
+# STEP 2
+df = df.ffill()
+assert df.isnull().sum().sum() == 0
+
+# STEP 3
+returns = df.pct_change()
+ma20    = df.rolling(20).mean()
+ma50    = df.rolling(50).mean()
+vol20   = returns.rolling(20).std()
+
+# STEP 4
+monthly_prices  = df.resample('ME').last()
+monthly_returns = returns.resample('ME').sum()
+
+# STEP 5
+corr = returns.corr()
+np.fill_diagonal(corr.values, 0)
+idx = np.unravel_index(corr.values.argmax(), corr.shape)
+print(f"Most correlated: {corr.columns[idx[0]]} & {corr.columns[idx[1]]}")
+
+# STEP 6
+fig = plt.figure(figsize=(18, 12))
+fig.suptitle('Stock Portfolio Analysis 2022–2024', fontsize=15, fontweight='bold')
+gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.4, wspace=0.35)
+
+# 1: Normalized prices
+ax1 = fig.add_subplot(gs[0, 0])
+norm = df / df.iloc[0] * 100
+for t in tickers: ax1.plot(norm.index, norm[t], label=t, linewidth=1.2)
+ax1.set_title('Normalized Price (Base=100)'); ax1.legend(fontsize=8); ax1.grid(alpha=0.3)
+
+# 2: Monthly returns heatmap
+import seaborn as sns
+ax2 = fig.add_subplot(gs[0, 1])
+mr = monthly_returns.T
+mr.columns = [d.strftime('%b-%y') for d in mr.columns]
+sns.heatmap(mr, annot=False, cmap='RdYlGn', center=0, ax=ax2, cbar=True)
+ax2.set_title('Monthly Returns Heatmap'); ax2.tick_params(axis='x', rotation=45, labelsize=7)
+
+# 3: Rolling volatility
+ax3 = fig.add_subplot(gs[0, 2])
+for t in tickers: ax3.plot(vol20.index, vol20[t]*100, label=t, linewidth=1)
+ax3.set_title('20-day Rolling Volatility (%)'); ax3.legend(fontsize=8); ax3.grid(alpha=0.3)
+
+# 4: Correlation heatmap
+corr2 = returns.corr()
+ax4 = fig.add_subplot(gs[1, 0])
+sns.heatmap(corr2, annot=True, fmt='.2f', cmap='coolwarm', ax=ax4, vmin=-1, vmax=1)
+ax4.set_title('Return Correlations')
+
+# 5: Return distributions
+ax5 = fig.add_subplot(gs[1, 1])
+for t in tickers:
+    ax5.hist(returns[t].dropna()*100, bins=60, alpha=0.5, label=t, density=True)
+ax5.set_title('Daily Return Distributions (%)'); ax5.legend(fontsize=8)
+
+# 6: Drawdown of best ticker
+best = (df.iloc[-1]/df.iloc[0]).idxmax()
+prices_s  = df[best]
+roll_max  = prices_s.cummax()
+drawdown  = (prices_s - roll_max) / roll_max * 100
+ax6 = fig.add_subplot(gs[1, 2])
+ax6.fill_between(drawdown.index, drawdown.values, 0, color='crimson', alpha=0.5)
+ax6.set_title(f'Drawdown — {best}'); ax6.grid(alpha=0.3)
+
+plt.savefig('portfolio_report.png', dpi=150, bbox_inches='tight')
+plt.show()
+print("Dashboard saved to portfolio_report.png")`
+          }
+        ]
+      }
+    ];
+
+    const ChevronIcon = ({ open }) => (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <polyline points={open ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} />
+      </svg>
+    );
+
+    const CopyIcon = () => (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+      </svg>
+    );
+
+    function CodeBlock({ code, label = "CODE" }) {
+      const [copied, setCopied] = useState(false);
+      const copy = () => {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      };
+      return (
+        <div style={{ borderRadius: 10, overflow: "hidden", marginBottom: 14, border: "1px solid #1e293b" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+                        background: "#0f172a", padding: "7px 14px" }}>
+            <span style={{ fontSize: 11, fontFamily: "monospace", color: "#64748b", letterSpacing: 1 }}>{label}</span>
+            <button onClick={copy} style={{ background: "none", border: "none", color: copied ? "#4ade80" : "#64748b",
+                                            cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
+                                            fontSize: 12, padding: "2px 6px" }}>
+              <CopyIcon /> {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          <pre style={{ margin: 0, padding: "16px 18px", background: "#020817",
+                        color: "#e2e8f0", fontSize: 13, lineHeight: 1.7, overflowX: "auto",
+                        fontFamily: "'Fira Code', 'JetBrains Mono', 'Courier New', monospace" }}>
+            {code.trim()}
+          </pre>
+        </div>
+      );
+    }
+
+    function SectionCard({ section, color }) {
+      const [showSolution, setShowSolution] = useState(false);
+      return (
+        <div style={{ marginBottom: 32, background: "#0a0f1a", borderRadius: 12,
+                      border: `1px solid ${color}22`, overflow: "hidden" }}>
+          <div style={{ padding: "16px 22px", borderBottom: `1px solid ${color}22`,
+                        background: `linear-gradient(90deg, ${color}11 0%, transparent 100%)` }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#f1f5f9", fontFamily: "'Sora', sans-serif" }}>
+              {section.title}
+            </h3>
+          </div>
+          <div style={{ padding: "18px 22px" }}>
+            <div style={{ background: `${color}12`, border: `1px solid ${color}30`, borderRadius: 8,
+                          padding: "11px 15px", marginBottom: 16 }}>
+              <p style={{ margin: 0, fontSize: 13.5, color: "#94a3b8", lineHeight: 1.7, fontStyle: "italic" }}>
+                💡 <strong style={{ color }}>Why this matters: </strong>{section.theory}
+              </p>
+            </div>
+            <CodeBlock code={section.code} label="CONCEPT + EXAMPLES" />
+            <div style={{ background: "#0c1a2e", border: "1px solid #1e3a5f", borderRadius: 10,
+                          overflow: "hidden", marginBottom: 10 }}>
+              <div style={{ background: "#0f2744", padding: "8px 16px", borderBottom: "1px solid #1e3a5f" }}>
+                <span style={{ color: "#38bdf8", fontWeight: 700, fontSize: 12, letterSpacing: 1 }}>
+                  ✏️ HANDS-ON EXERCISE
+                </span>
+              </div>
+              <pre style={{ margin: 0, padding: "14px 18px", color: "#7dd3fc", fontSize: 13,
+                            lineHeight: 1.7, overflowX: "auto",
+                            fontFamily: "'Fira Code', 'JetBrains Mono', monospace" }}>
+                {section.exercise.trim()}
+              </pre>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={() => setShowSolution(s => !s)}
+                      style={{ background: showSolution ? "#16213e" : `${color}22`,
+                                border: `1px solid ${color}55`, color: color,
+                                padding: "7px 18px", borderRadius: 8, cursor: "pointer",
+                                fontSize: 13, fontWeight: 600, transition: "all 0.2s" }}>
+                {showSolution ? "Hide Solution" : "Reveal Solution"}
+              </button>
+            </div>
+            {showSolution && (
+              <div style={{ marginTop: 12 }}>
+                <CodeBlock code={section.solution} label="SOLUTION" />
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function ModuleCard({ module, isNew }) {
+      const [open, setOpen] = useState(false);
+      return (
+        <div style={{ marginBottom: 20, borderRadius: 14, overflow: "hidden",
+                      border: `1px solid ${module.color}${isNew ? '55' : '33'}`,
+                      boxShadow: open ? `0 0 30px ${module.color}15` : "none",
+                      transition: "box-shadow 0.3s" }}>
+          <button onClick={() => setOpen(o => !o)} style={{
+            width: "100%", textAlign: "left",
+            background: `linear-gradient(135deg, ${module.accent} 0%, #0a0f1a 100%)`,
+            padding: "20px 24px", border: "none", cursor: "pointer", display: "flex",
+            justifyContent: "space-between", alignItems: "flex-start"
+          }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                <span style={{ background: module.color, color: "#000", padding: "3px 10px",
+                               borderRadius: 20, fontSize: 11, fontWeight: 800, letterSpacing: 1.5,
+                               fontFamily: "'Sora', sans-serif" }}>
+                  {module.tag}
+                </span>
+                <span style={{ color: "#475569", fontSize: 12 }}>{module.time}</span>
+                {isNew && (
+                  <span style={{ background: "#16a34a22", border: "1px solid #16a34a55",
+                                 color: "#4ade80", padding: "2px 8px", borderRadius: 20,
+                                 fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>
+                    NEW
+                  </span>
+                )}
+              </div>
+              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#f1f5f9",
+                           fontFamily: "'Sora', sans-serif", lineHeight: 1.3 }}>
+                {module.title}
+              </h2>
+              <p style={{ margin: "8px 0 0", fontSize: 13, color: "#64748b", maxWidth: 700, lineHeight: 1.6 }}>
+                {module.why}
+              </p>
+            </div>
+            <span style={{ color: module.color, marginLeft: 16, marginTop: 4, flexShrink: 0 }}>
+              <ChevronIcon open={open} />
+            </span>
+          </button>
+          {open && (
+            <div style={{ background: "#06090f", padding: "24px 24px 8px" }}>
+              {module.sections.map((section, i) => (
+                <SectionCard key={i} section={section} color={module.color} />
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const NEW_IDS = new Set(["time-series", "performance", "validation", "visualization"]);
+
+    function App() {
+      const [showDay2, setShowDay2] = useState(false);
+
+      const day1 = curriculum.filter(m => !NEW_IDS.has(m.id));
+      const day2 = curriculum.filter(m => NEW_IDS.has(m.id));
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#030712", fontFamily: "'Inter', system-ui, sans-serif" }}>
+          <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+
+          {/* Header */}
+          <div className="mobile-padding" style={{ padding: "48px 24px 32px", maxWidth: 920, margin: "0 auto", textAlign: "center" }}>
+            <div className="header-tags" style={{ display: "inline-flex", gap: 8, marginBottom: 20, flexWrap: "wrap", justifyContent: "center" }}>
+              {[["NumPy","#00C2FF"],["Pandas","#7C3AED"],["Time Series","#EC4899"],
+                ["Performance","#F97316"],["Testing","#10B981"],["Viz","#A855F7"]].map(([lib, c]) => (
+                <span key={lib} style={{
+                  padding: "4px 14px", borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: 1.2,
+                  background: `${c}22`, border: `1px solid ${c}44`, color: c
+                }}>{lib}</span>
+              ))}
+            </div>
+            <h1 style={{ margin: "0 0 14px", fontSize: "clamp(24px, 5vw, 40px)", fontWeight: 800,
+                         fontFamily: "'Sora', sans-serif", color: "#f8fafc", lineHeight: 1.2 }}>
+              Production-Ready Data Engineering<br />
+              <span style={{ background: "linear-gradient(90deg, #00C2FF, #EC4899, #F97316)",
+                             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                Complete 2-Day Curriculum
+              </span>
+            </h1>
+            <p style={{ margin: "0 auto 28px", color: "#64748b", fontSize: 14, maxWidth: 620, lineHeight: 1.7 }}>
+              <strong style={{ color: "#94a3b8" }}>Day 1:</strong> NumPy, Pandas, Transforms, Merges, Pivot, Capstone<br />
+              <strong style={{ color: "#94a3b8" }}>Day 2 (NEW):</strong> Time Series · Performance · Validation · Visualization<br />
+              8 modules · 21 topics · 21 exercises · 2 capstone projects
+            </p>
+
+            {/* Day selector */}
+            <div className="day-selector" style={{ display: "inline-flex", gap: 0, borderRadius: 10, overflow: "hidden",
+                          border: "1px solid #1e293b", marginBottom: 10 }}>
+              {[["Day 1 — Foundations", false], ["Day 2 — Production", true]].map(([label, isD2]) => (
+                <button key={label} onClick={() => setShowDay2(isD2)}
+                        style={{ padding: "10px 22px", border: "none", cursor: "pointer",
+                                  fontSize: 13, fontWeight: 600, transition: "all 0.2s",
+                                  background: showDay2 === isD2 ? (isD2 ? "#EC4899" : "#00C2FF") : "#0a0f1a",
+                                  color: showDay2 === isD2 ? "#000" : "#64748b" }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Setup */}
+          <div className="mobile-padding" style={{ maxWidth: 920, margin: "0 auto 28px", padding: "0 24px" }}>
+            <div style={{ background: "#0a0f1a", border: "1px solid #1e293b", borderRadius: 12, padding: "16px 22px" }}>
+              <div style={{ color: "#94a3b8", fontSize: 12, letterSpacing: 1, fontWeight: 600, marginBottom: 8 }}>
+                ⚡ SETUP
+              </div>
+              <pre style={{ margin: 0, color: "#4ade80", fontSize: 13, fontFamily: "monospace", overflowX: "auto" }}>
+    {`pip install numpy pandas matplotlib seaborn plotly jupyter
+    # Google Colab already has all of these — recommended for beginners`}
+              </pre>
+            </div>
+          </div>
+
+          {/* Modules */}
+          <div className="mobile-padding" style={{ maxWidth: 920, margin: "0 auto", padding: "0 24px 60px" }}>
+
+            {!showDay2 && (
+              <>
+                <div style={{ color: "#475569", fontSize: 12, letterSpacing: 2, fontWeight: 700,
+                              marginBottom: 16, textTransform: "uppercase" }}>
+                  — Day 1: Core Foundations —
+                </div>
+                {day1.map(mod => <ModuleCard key={mod.id} module={mod} isNew={false} />)}
+              </>
+            )}
+
+            {showDay2 && (
+              <>
+                <div style={{ color: "#4ade80", fontSize: 12, letterSpacing: 2, fontWeight: 700,
+                              marginBottom: 16, textTransform: "uppercase" }}>
+                  — Day 2: Production Skills (New) —
+                </div>
+                {day2.map(mod => <ModuleCard key={mod.id} module={mod} isNew={true} />)}
+              </>
+            )}
+
+            {/* Footer */}
+            <div style={{ marginTop: 36, padding: "24px", background: "#0a0f1a",
+                          borderRadius: 12, border: "1px solid #1e293b", textAlign: "center" }}>
+              <p style={{ margin: "0 0 6px", color: "#475569", fontSize: 13 }}>
+                🎯 Next steps after completing both days:
+              </p>
+              <p style={{ margin: "0 0 12px", color: "#64748b", fontSize: 13 }}>
+                Pick a real Kaggle dataset → apply the full Day 1 + Day 2 pipeline → build a portfolio report
+              </p>
+              <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                {["kaggle.com/datasets", "github.com/datasets", "data.gov", "ourworldindata.org"].map(site => (
+                  <span key={site} style={{ color: "#00C2FF", fontSize: 13, fontWeight: 500 }}>{site}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

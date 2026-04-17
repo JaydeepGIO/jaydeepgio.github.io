@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technical Blog — Jaydeep Goswami</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --border: #222222;
+    --border2: #2e2e2e;
+    --text: #f0ede8;
+    --text2: #999490;
+    --text3: #5a5754;
+    --accent: #c8f563;
+    --accent-dim: rgba(200,245,99,0.08);
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    padding: 100px 32px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 800px; margin: 0 auto; position: relative; z-index: 1; }
+
+  header { margin-bottom: 64px; }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text3);
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 24px;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 8vw, 64px);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -1.5px;
+    margin-bottom: 12px;
+  }
+  h1 span { color: var(--accent); }
+  .tagline { color: var(--text2); font-size: 18px; font-weight: 300; }
+
+  .post-list { display: flex; flex-direction: column; gap: 16px; margin-top: 48px; }
+  .post-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: block;
+  }
+  .post-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .post-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .post-date { font-size: 12px; color: var(--text3); font-weight: 400; font-family: var(--font-body); white-space: nowrap; margin-top: 4px; }
+  .post-desc { font-size: 14px; color: var(--text2); font-weight: 300; line-height: 1.6; }
+  .post-tags { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 3px 10px;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 768px) { 
+    body { padding: 64px 20px; } 
+    .post-title { flex-direction: column; gap: 4px; }
+    .post-date { margin-top: 0; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="../index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Portfolio</a>
+      <h1>Technical <span>Blog</span></h1>
+      <p class="tagline">Deep dives into backend engineering, distributed systems, and data processing.</p>
+    </header>
+
+    <div class="post-list">
+      <!-- Pandas Post -->
+      <a href="pandas/index.html" class="post-card">
+        <div class="post-title">
+          Production-Ready Data Engineering with Pandas
+          <span class="post-date">April 2026</span>
+        </div>
+        <p class="post-desc">A complete 2-day curriculum covering NumPy vectorization, Pandas transforms, performance optimization, and high-scale validation pipelines.</p>
+        <div class="post-tags">
+          <span class="tag">Python</span>
+          <span class="tag">Pandas</span>
+          <span class="tag">Data Engineering</span>
+        </div>
+      </a>
+
+      <!-- Placeholder -->
+      <div style="border: 1px dashed var(--border2); border-radius: 12px; padding: 40px; text-align: center; color: var(--text3);">
+        <i class="fa-solid fa-code-branch" style="font-size: 24px; margin-bottom: 12px; display: block;"></i>
+        <p style="font-size: 14px;">Building new deep dives... <br>Check back soon.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
