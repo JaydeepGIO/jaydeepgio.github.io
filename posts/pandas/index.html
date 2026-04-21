@@ -8,7 +8,7 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <!-- React & Babel CDN -->
@@ -17,7 +17,47 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
-    body { margin: 0; padding: 0; background: #030712; }
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #111111;
+      --bg3: #1a1a1a;
+      --border: #222222;
+      --border2: #2e2e2e;
+      --text: #f0ede8;
+      --text2: #999490;
+      --text3: #5a5754;
+      --accent: #c8f563;
+      --accent2: #a8d94a;
+      --accent-dim: rgba(200,245,99,0.08);
+      --accent-dim2: rgba(200,245,99,0.14);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-code: 'Fira Code', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body { 
+      margin: 0; 
+      padding: 0; 
+      background: var(--bg); 
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+
     /* Navigation shim for standalone post */
     .post-nav {
       position: sticky;
@@ -30,19 +70,19 @@
       align-items: center;
       background: rgba(10,10,10,0.85);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid #222;
+      border-bottom: 1px solid var(--border);
     }
     .post-nav a {
-      color: #999490;
+      color: var(--text2);
       text-decoration: none;
-      font-family: 'Inter', sans-serif;
+      font-family: var(--font-body);
       font-size: 14px;
       display: flex;
       align-items: center;
       gap: 8px;
       transition: color 0.2s;
     }
-    .post-nav a:hover { color: #c8f563; }
+    .post-nav a:hover { color: var(--accent); }
 
     /* Responsive Adjustments */
     @media (max-width: 768px) {
@@ -73,8 +113,8 @@
       {
         id: "numpy-core",
         tag: "NUMPY",
-        color: "#00C2FF",
-        accent: "#003A4D",
+        color: "var(--accent)",
+        accent: "rgba(200,245,99,0.15)",
         time: "09:00 – 11:00",
         title: "NumPy Core — Arrays, Indexing & Vectorization",
         why: "NumPy arrays are the memory backbone of all scientific Python. Before Pandas, ML libraries, or data pipelines — everything sits on ndarray. Learning it means understanding how Python avoids Python-speed loops.",
@@ -225,8 +265,8 @@ print(sensors.mean(), sensors.std())`
       {
         id: "pandas-series",
         tag: "PANDAS",
-        color: "#7C3AED",
-        accent: "#1E0A3C",
+        color: "var(--accent)",
+        accent: "rgba(200,245,99,0.1)",
         time: "11:15 – 13:00",
         title: "Pandas Fundamentals — Series, DataFrame & I/O",
         why: "Pandas is the SQL of Python data work. Series = labeled 1D array. DataFrame = labeled 2D table. The label index is what makes Pandas powerful — alignment-by-label prevents entire classes of data bugs.",
@@ -340,8 +380,8 @@ print(df.loc[:, ['product','price']])`
       {
         id: "pandas-transform",
         tag: "PANDAS",
-        color: "#059669",
-        accent: "#022C22",
+        color: "var(--accent)",
+        accent: "rgba(200,245,99,0.12)",
         time: "14:00 – 16:00",
         title: "Data Transformation — Clean, Reshape, Aggregate",
         why: "70% of data engineering is cleaning and reshaping. These operations turn raw messy data into query-ready tables. Every ETL pipeline, feature engineering step, and report aggregation uses these exact patterns.",
@@ -508,8 +548,8 @@ print(clv[clv > 1000])`
       {
         id: "pandas-advanced",
         tag: "ADVANCED",
-        color: "#F59E0B",
-        accent: "#2C1A00",
+        color: "var(--accent)",
+        accent: "rgba(200,245,99,0.08)",
         time: "16:15 – 18:00",
         title: "Merges, Pivot Tables & Real Pipeline",
         why: "Production data always lives in multiple tables. Merges are JOIN operations. Pivot tables turn transactional data into analytical summaries. The capstone ties everything into a realistic ETL + analysis workflow.",
@@ -703,8 +743,8 @@ print(sal_dept[['dept_name','util_pct']].to_string(index=False))`
       {
         id: "time-series",
         tag: "TIME SERIES",
-        color: "#EC4899",
-        accent: "#2D0A1E",
+        color: "var(--accent)",
+        accent: "rgba(200,245,99,0.14)",
         time: "Day 2 · Morning",
         title: "Time Series Analysis — Resample, Roll & Timezones",
         why: "Real-world data is chronological: stock prices, sensor telemetry, server logs, e-commerce sales. The DatetimeIndex unlocks a whole axis of analysis — frequency conversion, moving windows, lag features — that is impossible with plain integer indices. This is the backbone of forecasting and anomaly detection pipelines.",
@@ -814,7 +854,7 @@ print(monthly_df.head())`,
 np.random.seed(0)
 idx = pd.date_range('2022-01-01', periods=730, freq='D')  # 2 years daily
 sales = pd.Series(
-    np.random.randint(500, 3000, 730)
+    np.random.randint(50, 3000, 730)
     + np.sin(np.linspace(0, 8*np.pi, 730)) * 400  # seasonality
     + np.linspace(0, 500, 730),  # growth trend
     index=idx, name='daily_sales'
@@ -978,8 +1018,8 @@ print("Span:", diff.total_seconds() / 3600, "hours")`
       {
         id: "performance",
         tag: "PERFORMANCE",
-        color: "#F97316",
-        accent: "#2C0E00",
+        color: "var(--accent)",
+        accent: "rgba(200,245,99,0.12)",
         time: "Day 2 · Midday",
         title: "Large-Scale Performance — Memory, Speed & Out-of-Core",
         why: "Pandas loads everything into RAM. On a 16GB laptop, that means any file over ~6GB will crash your kernel. Even with smaller files, a single .apply() on 10M rows can take 3 minutes when a vectorized equivalent takes 0.1 seconds. Understanding performance is what separates a data scientist who works on samples from an engineer who ships production pipelines.",
@@ -1211,8 +1251,8 @@ print(df[['score','grade','bonus','risk','label']].head(10))`
       {
         id: "validation",
         tag: "VALIDATION",
-        color: "#10B981",
-        accent: "#022016",
+        color: "var(--accent)",
+        accent: "rgba(200,245,99,0.1)",
         time: "Day 2 · Afternoon",
         title: "Data Validation & Pipeline Testing",
         why: "A data pipeline that runs without errors can still produce wrong results silently — wrong dtypes, unexpected nulls, out-of-range values, schema drift from upstream APIs. Production pipelines need assertion layers and unit tests. This module teaches you to build defensive pipelines that fail loudly and correctly instead of silently producing garbage.",
@@ -1480,8 +1520,8 @@ print("All 5 tests passed.")`
       {
         id: "visualization",
         tag: "VISUALIZATION",
-        color: "#A855F7",
-        accent: "#1A0733",
+        color: "var(--accent)",
+        accent: "rgba(200,245,99,0.12)",
         time: "Day 2 · Evening",
         title: "Visualization & Storytelling — From Data to Insight",
         why: "Data engineering ends with a clean table. A project ends with an insight that drives action. Visualization is the translation layer between your transformed DataFrames and a decision-maker's understanding. Matplotlib is the low-level engine. Seaborn is the statistical layer. Plotly is the interactive production layer. You need all three in your toolkit.",
@@ -1833,19 +1873,19 @@ print("Dashboard saved to portfolio_report.png")`
         setTimeout(() => setCopied(false), 1500);
       };
       return (
-        <div style={{ borderRadius: 10, overflow: "hidden", marginBottom: 14, border: "1px solid #1e293b" }}>
+        <div style={{ borderRadius: 10, overflow: "hidden", marginBottom: 14, border: "1px solid var(--border)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
-                        background: "#0f172a", padding: "7px 14px" }}>
-            <span style={{ fontSize: 11, fontFamily: "monospace", color: "#64748b", letterSpacing: 1 }}>{label}</span>
-            <button onClick={copy} style={{ background: "none", border: "none", color: copied ? "#4ade80" : "#64748b",
+                        background: "var(--bg3)", padding: "7px 14px" }}>
+            <span style={{ fontSize: 11, fontFamily: "var(--font-code)", color: "var(--text3)", letterSpacing: 1 }}>{label}</span>
+            <button onClick={copy} style={{ background: "none", border: "none", color: copied ? "var(--accent)" : "var(--text3)",
                                             cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
                                             fontSize: 12, padding: "2px 6px" }}>
               <CopyIcon /> {copied ? "Copied!" : "Copy"}
             </button>
           </div>
-          <pre style={{ margin: 0, padding: "16px 18px", background: "#020817",
-                        color: "#e2e8f0", fontSize: 13, lineHeight: 1.7, overflowX: "auto",
-                        fontFamily: "'Fira Code', 'JetBrains Mono', 'Courier New', monospace" }}>
+          <pre style={{ margin: 0, padding: "16px 18px", background: "var(--bg2)",
+                        color: "var(--text)", fontSize: 13, lineHeight: 1.7, overflowX: "auto",
+                        fontFamily: "var(--font-code)" }}>
             {code.trim()}
           </pre>
         </div>
@@ -1855,39 +1895,39 @@ print("Dashboard saved to portfolio_report.png")`
     function SectionCard({ section, color }) {
       const [showSolution, setShowSolution] = useState(false);
       return (
-        <div style={{ marginBottom: 32, background: "#0a0f1a", borderRadius: 12,
-                      border: `1px solid ${color}22`, overflow: "hidden" }}>
-          <div style={{ padding: "16px 22px", borderBottom: `1px solid ${color}22`,
-                        background: `linear-gradient(90deg, ${color}11 0%, transparent 100%)` }}>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#f1f5f9", fontFamily: "'Sora', sans-serif" }}>
+        <div style={{ marginBottom: 32, background: "var(--bg2)", borderRadius: 12,
+                      border: `1px solid var(--border)`, overflow: "hidden" }}>
+          <div style={{ padding: "16px 22px", borderBottom: `1px solid var(--border)`,
+                        background: `linear-gradient(90deg, var(--accent-dim) 0%, transparent 100%)` }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "var(--text)", fontFamily: "var(--font-display)" }}>
               {section.title}
             </h3>
           </div>
           <div style={{ padding: "18px 22px" }}>
-            <div style={{ background: `${color}12`, border: `1px solid ${color}30`, borderRadius: 8,
+            <div style={{ background: "var(--accent-dim)", border: `1px solid var(--accent-dim2)`, borderRadius: 8,
                           padding: "11px 15px", marginBottom: 16 }}>
-              <p style={{ margin: 0, fontSize: 13.5, color: "#94a3b8", lineHeight: 1.7, fontStyle: "italic" }}>
-                💡 <strong style={{ color }}>Why this matters: </strong>{section.theory}
+              <p style={{ margin: 0, fontSize: 13.5, color: "var(--text2)", lineHeight: 1.7, fontStyle: "italic" }}>
+                💡 <strong style={{ color: "var(--accent)" }}>Why this matters: </strong>{section.theory}
               </p>
             </div>
             <CodeBlock code={section.code} label="CONCEPT + EXAMPLES" />
-            <div style={{ background: "#0c1a2e", border: "1px solid #1e3a5f", borderRadius: 10,
+            <div style={{ background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: 10,
                           overflow: "hidden", marginBottom: 10 }}>
-              <div style={{ background: "#0f2744", padding: "8px 16px", borderBottom: "1px solid #1e3a5f" }}>
-                <span style={{ color: "#38bdf8", fontWeight: 700, fontSize: 12, letterSpacing: 1 }}>
+              <div style={{ background: "var(--bg2)", padding: "8px 16px", borderBottom: "1px solid var(--border)" }}>
+                <span style={{ color: "var(--accent)", fontWeight: 700, fontSize: 12, letterSpacing: 1 }}>
                   ✏️ HANDS-ON EXERCISE
                 </span>
               </div>
-              <pre style={{ margin: 0, padding: "14px 18px", color: "#7dd3fc", fontSize: 13,
+              <pre style={{ margin: 0, padding: "14px 18px", color: "var(--text)", fontSize: 13,
                             lineHeight: 1.7, overflowX: "auto",
-                            fontFamily: "'Fira Code', 'JetBrains Mono', monospace" }}>
+                            fontFamily: "var(--font-code)" }}>
                 {section.exercise.trim()}
               </pre>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <button onClick={() => setShowSolution(s => !s)}
-                      style={{ background: showSolution ? "#16213e" : `${color}22`,
-                                border: `1px solid ${color}55`, color: color,
+                      style={{ background: showSolution ? "var(--bg3)" : "var(--accent-dim)",
+                                border: `1px solid var(--accent)`, color: "var(--accent)",
                                 padding: "7px 18px", borderRadius: 8, cursor: "pointer",
                                 fontSize: 13, fontWeight: 600, transition: "all 0.2s" }}>
                 {showSolution ? "Hide Solution" : "Reveal Solution"}
@@ -1907,45 +1947,45 @@ print("Dashboard saved to portfolio_report.png")`
       const [open, setOpen] = useState(false);
       return (
         <div style={{ marginBottom: 20, borderRadius: 14, overflow: "hidden",
-                      border: `1px solid ${module.color}${isNew ? '55' : '33'}`,
-                      boxShadow: open ? `0 0 30px ${module.color}15` : "none",
+                      border: `1px solid var(--border)`,
+                      boxShadow: open ? `0 0 30px var(--accent-dim)` : "none",
                       transition: "box-shadow 0.3s" }}>
           <button onClick={() => setOpen(o => !o)} style={{
             width: "100%", textAlign: "left",
-            background: `linear-gradient(135deg, ${module.accent} 0%, #0a0f1a 100%)`,
+            background: `linear-gradient(135deg, ${module.accent} 0%, var(--bg2) 100%)`,
             padding: "20px 24px", border: "none", cursor: "pointer", display: "flex",
             justifyContent: "space-between", alignItems: "flex-start"
           }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                <span style={{ background: module.color, color: "#000", padding: "3px 10px",
+                <span style={{ background: "var(--accent)", color: "#000", padding: "3px 10px",
                                borderRadius: 20, fontSize: 11, fontWeight: 800, letterSpacing: 1.5,
-                               fontFamily: "'Sora', sans-serif" }}>
+                               fontFamily: "var(--font-display)" }}>
                   {module.tag}
                 </span>
-                <span style={{ color: "#475569", fontSize: 12 }}>{module.time}</span>
+                <span style={{ color: "var(--text3)", fontSize: 12 }}>{module.time}</span>
                 {isNew && (
-                  <span style={{ background: "#16a34a22", border: "1px solid #16a34a55",
-                                 color: "#4ade80", padding: "2px 8px", borderRadius: 20,
+                  <span style={{ background: "var(--accent-dim2)", border: "1px solid var(--accent)",
+                                 color: "var(--accent)", padding: "2px 8px", borderRadius: 20,
                                  fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>
                     NEW
                   </span>
                 )}
               </div>
-              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "#f1f5f9",
-                           fontFamily: "'Sora', sans-serif", lineHeight: 1.3 }}>
+              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: "var(--text)",
+                           fontFamily: "var(--font-display)", lineHeight: 1.3 }}>
                 {module.title}
               </h2>
-              <p style={{ margin: "8px 0 0", fontSize: 13, color: "#64748b", maxWidth: 700, lineHeight: 1.6 }}>
+              <p style={{ margin: "8px 0 0", fontSize: 13, color: "var(--text2)", maxWidth: 700, lineHeight: 1.6 }}>
                 {module.why}
               </p>
             </div>
-            <span style={{ color: module.color, marginLeft: 16, marginTop: 4, flexShrink: 0 }}>
+            <span style={{ color: "var(--accent)", marginLeft: 16, marginTop: 4, flexShrink: 0 }}>
               <ChevronIcon open={open} />
             </span>
           </button>
           {open && (
-            <div style={{ background: "#06090f", padding: "24px 24px 8px" }}>
+            <div style={{ background: "var(--bg)", padding: "24px 24px 8px" }}>
               {module.sections.map((section, i) => (
                 <SectionCard key={i} section={section} color={module.color} />
               ))}
@@ -1964,43 +2004,41 @@ print("Dashboard saved to portfolio_report.png")`
       const day2 = curriculum.filter(m => NEW_IDS.has(m.id));
 
       return (
-        <div style={{ minHeight: "100vh", background: "#030712", fontFamily: "'Inter', system-ui, sans-serif" }}>
-          <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
-
+        <div style={{ minHeight: "100vh", background: "var(--bg)", fontFamily: "var(--font-body)" }}>
           {/* Header */}
           <div className="mobile-padding" style={{ padding: "48px 24px 32px", maxWidth: 920, margin: "0 auto", textAlign: "center" }}>
             <div className="header-tags" style={{ display: "inline-flex", gap: 8, marginBottom: 20, flexWrap: "wrap", justifyContent: "center" }}>
-              {[["NumPy","#00C2FF"],["Pandas","#7C3AED"],["Time Series","#EC4899"],
-                ["Performance","#F97316"],["Testing","#10B981"],["Viz","#A855F7"]].map(([lib, c]) => (
+              {[["NumPy","var(--accent)"],["Pandas","var(--accent)"],["Time Series","var(--accent)"],
+                ["Performance","var(--accent)"],["Testing","var(--accent)"],["Viz","var(--accent)"]].map(([lib, c]) => (
                 <span key={lib} style={{
                   padding: "4px 14px", borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: 1.2,
-                  background: `${c}22`, border: `1px solid ${c}44`, color: c
+                  background: `var(--accent-dim)`, border: `1px solid var(--accent-dim2)`, color: `var(--accent)`
                 }}>{lib}</span>
               ))}
             </div>
             <h1 style={{ margin: "0 0 14px", fontSize: "clamp(24px, 5vw, 40px)", fontWeight: 800,
-                         fontFamily: "'Sora', sans-serif", color: "#f8fafc", lineHeight: 1.2 }}>
+                         fontFamily: "var(--font-display)", color: "var(--text)", lineHeight: 1.2 }}>
               Production-Ready Data Engineering<br />
-              <span style={{ background: "linear-gradient(90deg, #00C2FF, #EC4899, #F97316)",
+              <span style={{ background: "linear-gradient(90deg, var(--accent), var(--accent2))",
                              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 Complete 2-Day Curriculum
               </span>
             </h1>
-            <p style={{ margin: "0 auto 28px", color: "#64748b", fontSize: 14, maxWidth: 620, lineHeight: 1.7 }}>
-              <strong style={{ color: "#94a3b8" }}>Day 1:</strong> NumPy, Pandas, Transforms, Merges, Pivot, Capstone<br />
-              <strong style={{ color: "#94a3b8" }}>Day 2 (NEW):</strong> Time Series · Performance · Validation · Visualization<br />
+            <p style={{ margin: "0 auto 28px", color: "var(--text2)", fontSize: 14, maxWidth: 620, lineHeight: 1.7 }}>
+              <strong style={{ color: "var(--text)" }}>Day 1:</strong> NumPy, Pandas, Transforms, Merges, Pivot, Capstone<br />
+              <strong style={{ color: "var(--text)" }}>Day 2 (NEW):</strong> Time Series · Performance · Validation · Visualization<br />
               8 modules · 21 topics · 21 exercises · 2 capstone projects
             </p>
 
             {/* Day selector */}
             <div className="day-selector" style={{ display: "inline-flex", gap: 0, borderRadius: 10, overflow: "hidden",
-                          border: "1px solid #1e293b", marginBottom: 10 }}>
+                          border: "1px solid var(--border)", marginBottom: 10 }}>
               {[["Day 1 — Foundations", false], ["Day 2 — Production", true]].map(([label, isD2]) => (
                 <button key={label} onClick={() => setShowDay2(isD2)}
                         style={{ padding: "10px 22px", border: "none", cursor: "pointer",
                                   fontSize: 13, fontWeight: 600, transition: "all 0.2s",
-                                  background: showDay2 === isD2 ? (isD2 ? "#EC4899" : "#00C2FF") : "#0a0f1a",
-                                  color: showDay2 === isD2 ? "#000" : "#64748b" }}>
+                                  background: showDay2 === isD2 ? "var(--accent)" : "var(--bg2)",
+                                  color: showDay2 === isD2 ? "#000" : "var(--text2)" }}>
                   {label}
                 </button>
               ))}
@@ -2009,11 +2047,11 @@ print("Dashboard saved to portfolio_report.png")`
 
           {/* Setup */}
           <div className="mobile-padding" style={{ maxWidth: 920, margin: "0 auto 28px", padding: "0 24px" }}>
-            <div style={{ background: "#0a0f1a", border: "1px solid #1e293b", borderRadius: 12, padding: "16px 22px" }}>
-              <div style={{ color: "#94a3b8", fontSize: 12, letterSpacing: 1, fontWeight: 600, marginBottom: 8 }}>
+            <div style={{ background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 12, padding: "16px 22px" }}>
+              <div style={{ color: "var(--text3)", fontSize: 12, letterSpacing: 1, fontWeight: 600, marginBottom: 8 }}>
                 ⚡ SETUP
               </div>
-              <pre style={{ margin: 0, color: "#4ade80", fontSize: 13, fontFamily: "monospace", overflowX: "auto" }}>
+              <pre style={{ margin: 0, color: "var(--accent)", fontSize: 13, fontFamily: "var(--font-code)", overflowX: "auto" }}>
     {`pip install numpy pandas matplotlib seaborn plotly jupyter
     # Google Colab already has all of these — recommended for beginners`}
               </pre>
@@ -2025,7 +2063,7 @@ print("Dashboard saved to portfolio_report.png")`
 
             {!showDay2 && (
               <>
-                <div style={{ color: "#475569", fontSize: 12, letterSpacing: 2, fontWeight: 700,
+                <div style={{ color: "var(--text3)", fontSize: 12, letterSpacing: 2, fontWeight: 700,
                               marginBottom: 16, textTransform: "uppercase" }}>
                   — Day 1: Core Foundations —
                 </div>
@@ -2035,7 +2073,7 @@ print("Dashboard saved to portfolio_report.png")`
 
             {showDay2 && (
               <>
-                <div style={{ color: "#4ade80", fontSize: 12, letterSpacing: 2, fontWeight: 700,
+                <div style={{ color: "var(--accent)", fontSize: 12, letterSpacing: 2, fontWeight: 700,
                               marginBottom: 16, textTransform: "uppercase" }}>
                   — Day 2: Production Skills (New) —
                 </div>
@@ -2044,17 +2082,17 @@ print("Dashboard saved to portfolio_report.png")`
             )}
 
             {/* Footer */}
-            <div style={{ marginTop: 36, padding: "24px", background: "#0a0f1a",
-                          borderRadius: 12, border: "1px solid #1e293b", textAlign: "center" }}>
-              <p style={{ margin: "0 0 6px", color: "#475569", fontSize: 13 }}>
+            <div style={{ marginTop: 36, padding: "24px", background: "var(--bg2)",
+                          borderRadius: 12, border: "1px solid var(--border)", textAlign: "center" }}>
+              <p style={{ margin: "0 0 6px", color: "var(--text3)", fontSize: 13 }}>
                 🎯 Next steps after completing both days:
               </p>
-              <p style={{ margin: "0 0 12px", color: "#64748b", fontSize: 13 }}>
+              <p style={{ margin: "0 0 12px", color: "var(--text2)", fontSize: 13 }}>
                 Pick a real Kaggle dataset → apply the full Day 1 + Day 2 pipeline → build a portfolio report
               </p>
               <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
                 {["kaggle.com/datasets", "github.com/datasets", "data.gov", "ourworldindata.org"].map(site => (
-                  <span key={site} style={{ color: "#00C2FF", fontSize: 13, fontWeight: 500 }}>{site}</span>
+                  <span key={site} style={{ color: "var(--accent)", fontSize: 13, fontWeight: 500 }}>{site}</span>
                 ))}
               </div>
             </div>
