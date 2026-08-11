@@ -1660,8 +1660,7 @@ print(f<span class="string">"Matched {len(results)} jobs (Avg score: 94.2%)"</sp
 
   // Initialize theme
   const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+  if (savedTheme === 'dark') {
     document.body.classList.add('dark');
     updateToggleIcons(true);
   } else {
