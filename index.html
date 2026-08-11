@@ -1018,6 +1018,93 @@
     .exp-minor { flex-direction: column; }
     .exp-company-header { flex-direction: column; gap: 12px; }
   }
+
+  @media (max-width: 640px) {
+    nav { padding: 0 16px; }
+    .container { padding: 0 16px; }
+    section { padding: 60px 0; }
+    .hero-eyebrow { font-size: 12px; margin-bottom: 16px; }
+    .hero-name { font-size: clamp(32px, 8vw, 54px); }
+    .hero-role { font-size: 20px; margin-bottom: 16px; }
+    .hero-tagline { font-size: 15px; margin-bottom: 24px; }
+    
+    .hero-cta {
+      display: grid;
+      grid-template-columns: 1fr;
+      width: 100%;
+      gap: 10px;
+    }
+    
+    .hero-cta a {
+      justify-content: center;
+      width: 100%;
+    }
+
+    .hero-stats {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stat-item {
+      padding: 16px;
+    }
+
+    .skills-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .impact-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .project-block {
+      padding: 24px 16px;
+    }
+
+    .project-block-header {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .project-card {
+      padding: 24px 20px;
+    }
+
+    .edu-card {
+      padding: 24px 20px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .edu-left {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .edu-right {
+      text-align: left;
+    }
+
+    .contact-headline {
+      font-size: 32px;
+    }
+
+    .contact-link {
+      padding: 16px 20px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-name { font-size: 32px; }
+    .section-tag { font-size: 10px; padding: 4px 10px; }
+    .impact-num { font-size: 36px; }
+    .stat-number { font-size: 26px; }
+    .terminal-body { font-size: 12px; padding: 16px; }
+  }
 </style>
 </head>
 
