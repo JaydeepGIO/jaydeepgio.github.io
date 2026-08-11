@@ -1022,7 +1022,7 @@
   @media (max-width: 640px) {
     nav { padding: 0 16px; }
     .container { padding: 0 16px; }
-    section { padding: 60px 0; }
+    section { padding: 40px 0; }
     .hero-eyebrow { font-size: 12px; margin-bottom: 16px; }
     .hero-name { font-size: clamp(32px, 8vw, 54px); }
     .hero-role { font-size: 20px; margin-bottom: 16px; }
@@ -1030,37 +1030,57 @@
     
     .hero-cta {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(3, 1fr);
       width: 100%;
-      gap: 10px;
+      gap: 8px;
     }
     
-    .hero-cta a {
+    .hero-cta .btn-primary {
+      grid-column: 1 / -1;
       justify-content: center;
-      width: 100%;
+    }
+    
+    .hero-cta .btn-ghost {
+      justify-content: center;
+      padding: 10px 4px;
+      font-size: 13px;
     }
 
     .hero-stats {
-      flex-direction: column;
-      gap: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
     }
 
     .stat-item {
-      padding: 16px;
+      padding: 14px 8px;
+    }
+
+    .stat-number {
+      font-size: 24px;
     }
 
     .skills-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
 
     .impact-grid {
-      grid-template-columns: 1fr;
-      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .impact-item {
+      padding: 20px 12px;
+    }
+
+    .impact-num {
+      font-size: 32px;
     }
 
     .project-block {
-      padding: 24px 16px;
+      padding: 20px 16px;
     }
 
     .project-block-header {
@@ -1069,11 +1089,11 @@
     }
 
     .project-card {
-      padding: 24px 20px;
+      padding: 20px 16px;
     }
 
     .edu-card {
-      padding: 24px 20px;
+      padding: 20px 16px;
       flex-direction: column;
       align-items: flex-start;
       gap: 16px;
@@ -1094,16 +1114,17 @@
     }
 
     .contact-link {
-      padding: 16px 20px;
+      padding: 14px 16px;
     }
   }
 
   @media (max-width: 480px) {
     .hero-name { font-size: 32px; }
     .section-tag { font-size: 10px; padding: 4px 10px; }
-    .impact-num { font-size: 36px; }
-    .stat-number { font-size: 26px; }
-    .terminal-body { font-size: 12px; padding: 16px; }
+    .impact-num { font-size: 28px; }
+    .stat-number { font-size: 22px; }
+    .terminal-body { font-size: 11px; padding: 12px; }
+    .skills-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
