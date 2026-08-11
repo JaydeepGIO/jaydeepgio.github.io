@@ -991,6 +991,19 @@
     color: var(--text3);
   }
 
+  .coding-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .hackerrank-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 1024px) {
     .hero-grid { grid-template-columns: 1fr; gap: 40px; }
@@ -999,6 +1012,7 @@
     .impact-grid { grid-template-columns: repeat(2, 1fr); }
     .projects-grid { grid-template-columns: 1fr; }
     .contact-inner { grid-template-columns: 1fr; gap: 40px; }
+    .coding-grid { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 768px) {
@@ -1587,7 +1601,7 @@ print(f<span class="string">"Matched {len(results)} jobs (Avg score: 94.2%)"</sp
   <div class="container">
     <div class="section-tag">Coding Profiles</div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+    <div class="coding-grid">
 
       <!-- LeetCode -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -1631,7 +1645,7 @@ print(f<span class="string">"Matched {len(results)} jobs (Avg score: 94.2%)"</sp
             View profile <i class="fa-solid fa-arrow-up-right" style="font-size:10px;"></i>
           </a>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="hackerrank-grid">
           <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:16px;text-align:center;">
             <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Problem Solving</div>
             <div style="display:flex;justify-content:center;gap:4px;margin-bottom:8px;">
